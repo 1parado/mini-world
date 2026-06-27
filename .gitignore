@@ -1,0 +1,14 @@
+node_modules
+dist
+.DS_Store
+
+# 环境变量（含密钥，不提交）
+.env
+.env.local
+.env.*.local
+
+# Supabase 本地临时文件（含数据库连接串）
+supabase/.temp/
+
+# AI 助手配置目录（本地工具，非项目代码）
+.agents/
