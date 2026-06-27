@@ -2066,36 +2066,16 @@
 
   <!-- 📷 相册密码弹窗 -->
   <div id="album-password-panel" class="album-password-panel">
-    <h3 style="font-family:var(--font-display);margin:0 0 16px 0;text-align:center;">🔒 相册密码</h3>
-    <!-- 验证模式 -->
-    <div id="album-pwd-verify-section">
-      <div style="font-family:var(--font-display);font-size:13px;color:var(--text-ghost);text-align:center;margin-bottom:16px;">上传照片需要密码验证</div>
-      <div class="chat-setting-row">
-        <label>密码</label>
-        <input id="album-password-input" type="password" placeholder="请输入相册密码" autocomplete="off" />
-      </div>
-      <div id="album-password-error" style="font-family:var(--font-display);font-size:12px;color:#EA5455;min-height:18px;text-align:center;margin:4px 0;"></div>
-      <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
-        <button class="btn-primary" id="album-password-confirm">✅ 确认</button>
-        <button class="btn-secondary" id="album-password-cancel">取消</button>
-      </div>
+    <h3 style="font-family:var(--font-display);margin:0 0 16px 0;text-align:center;">🔒 验证身份</h3>
+    <div style="font-family:var(--font-display);font-size:13px;color:var(--text-ghost);text-align:center;margin-bottom:16px;">上传照片需要密码验证</div>
+    <div class="chat-setting-row">
+      <label>密码</label>
+      <input id="album-password-input" type="password" placeholder="请输入相册密码" autocomplete="off" />
     </div>
-    <!-- 设置模式（首次使用，localStorage 中无密码时显示） -->
-    <div id="album-pwd-setup-section" style="display:none;">
-      <div style="font-family:var(--font-display);font-size:13px;color:var(--text-ghost);text-align:center;margin-bottom:16px;">首次使用，请先设置相册密码</div>
-      <div class="chat-setting-row">
-        <label>新密码</label>
-        <input id="album-pwd-new" type="password" placeholder="设置相册密码" autocomplete="off" />
-      </div>
-      <div class="chat-setting-row" style="margin-top:8px;">
-        <label>确认</label>
-        <input id="album-pwd-confirm2" type="password" placeholder="再次输入密码" autocomplete="off" />
-      </div>
-      <div id="album-pwd-setup-error" style="font-family:var(--font-display);font-size:12px;color:#EA5455;min-height:18px;text-align:center;margin:4px 0;"></div>
-      <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
-        <button class="btn-primary" id="album-pwd-setup-save">💾 保存密码</button>
-        <button class="btn-secondary" id="album-pwd-setup-skip">暂不需要</button>
-      </div>
+    <div id="album-password-error" style="font-family:var(--font-display);font-size:12px;color:#EA5455;min-height:18px;text-align:center;margin:4px 0;"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
+      <button class="btn-primary" id="album-password-confirm">✅ 确认</button>
+      <button class="btn-secondary" id="album-password-cancel">取消</button>
     </div>
   </div>
 

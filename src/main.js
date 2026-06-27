@@ -14,7 +14,7 @@ import { AIClient, loadConfig, saveConfig } from './ai/AIClient.js';
 import AI_CONFIG from './ai/ai.config.js';
 
 // 图床（Supabase）
-import { storageClient, loadPhotos as loadPhotos$1, loadAlbumPassword, saveAlbumPassword } from './supabase/StorageClient.js';
+import { storageClient, loadPhotos as loadPhotos$1, isAlbumPasswordEnabled, verifyAlbumPassword } from './supabase/StorageClient.js';
 import SUPABASE_CONFIG from './supabase/supabase.config.js';
 
 // 工具
@@ -484,31 +484,16 @@ function showCoffeeOverlay() {
 }
 
 // ============================================================
-// 🔒 相册密码锁
+// 🔒 相册密码锁 — 密码由站长通过环境变量配置，别人只能输入验证
 // ============================================================
 
 let albumSessionAuthed = false;       // 本次会话是否已验证
 let albumPendingAction = null;         // 验证通过后要执行的回调
 
-/** 获取当前相册密码（从 localStorage 读取，不使用构建时内联值） */
-function getAlbumPassword() {
-  return loadAlbumPassword();
-}
-
-/** 是否启用密码锁 */
-function isAlbumPasswordEnabled() {
-  return getAlbumPassword() !== '';
-}
-
 /** 弹出密码弹窗，验证通过后执行 action */
 function requestAlbumAuth(action) {
   // 已验证或无密码 → 直接放行
   if (albumSessionAuthed || !isAlbumPasswordEnabled()) {
-    // localStorage 中没有密码 → 提示设置
-    if (!isAlbumPasswordEnabled()) {
-      showAlbumPwdSetup(action);
-      return;
-    }
     action();
     return;
   }
@@ -516,75 +501,19 @@ function requestAlbumAuth(action) {
   const panel = document.getElementById('album-password-panel');
   const input = document.getElementById('album-password-input');
   const error = document.getElementById('album-password-error');
-  // 切换为验证模式
-  document.getElementById('album-pwd-verify-section').style.display = '';
-  document.getElementById('album-pwd-setup-section').style.display = 'none';
   if (input) input.value = '';
   if (error) error.textContent = '';
   if (panel) panel.classList.add('visible');
   setTimeout(() => { if (input) input.focus(); }, 100);
 }
 
-/** 显示密码设置面板（首次使用时） */
-function showAlbumPwdSetup(action) {
-  albumPendingAction = action;
-  const panel = document.getElementById('album-password-panel');
-  const error = document.getElementById('album-pwd-setup-error');
-  // 切换为设置模式
-  document.getElementById('album-pwd-verify-section').style.display = 'none';
-  document.getElementById('album-pwd-setup-section').style.display = '';
-  const newInput = document.getElementById('album-pwd-new');
-  const confirm2Input = document.getElementById('album-pwd-confirm2');
-  if (newInput) newInput.value = '';
-  if (confirm2Input) confirm2Input.value = '';
-  if (error) error.textContent = '';
-  if (panel) panel.classList.add('visible');
-  setTimeout(() => { if (newInput) newInput.focus(); }, 100);
-}
-
-/** 保存新设置的相册密码 */
-function setupAlbumPassword() {
-  const newPwd = (document.getElementById('album-pwd-new')?.value || '').trim();
-  const confirm2 = (document.getElementById('album-pwd-confirm2')?.value || '').trim();
-  const error = document.getElementById('album-pwd-setup-error');
-
-  if (!newPwd) {
-    if (error) error.textContent = '❌ 密码不能为空';
-    return;
-  }
-  if (newPwd !== confirm2) {
-    if (error) error.textContent = '❌ 两次输入不一致';
-    return;
-  }
-  saveAlbumPassword(newPwd);
-  albumSessionAuthed = true;
-  const panel = document.getElementById('album-password-panel');
-  if (panel) panel.classList.remove('visible');
-  audio.playSFX('success');
-  showNotification('✅ 相册密码已设置');
-  if (albumPendingAction) {
-    albumPendingAction();
-    albumPendingAction = null;
-  }
-}
-
-/** 跳过密码设置（不设置密码，直接操作） */
-function skipAlbumPasswordSetup() {
-  const panel = document.getElementById('album-password-panel');
-  if (panel) panel.classList.remove('visible');
-  if (albumPendingAction) {
-    albumPendingAction();
-    albumPendingAction = null;
-  }
-}
-
-function confirmAlbumPassword() {
+async function confirmAlbumPassword() {
   const input = document.getElementById('album-password-input');
   const error = document.getElementById('album-password-error');
   const pwd = input ? input.value : '';
-  const expected = getAlbumPassword();
 
-  if (pwd === expected) {
+  const ok = await verifyAlbumPassword(pwd);
+  if (ok) {
     albumSessionAuthed = true;
     const panel = document.getElementById('album-password-panel');
     if (panel) panel.classList.remove('visible');
@@ -637,22 +566,6 @@ function showAlbumOverlay() {
   if (pwdCancel) pwdCancel.onclick = cancelAlbumPassword;
   if (pwdInput) pwdInput.onkeydown = (e) => {
     if (e.key === 'Enter') confirmAlbumPassword();
-    if (e.key === 'Escape') cancelAlbumPassword();
-  };
-
-  // 密码设置面板按钮绑定
-  const pwdSetupSave = document.getElementById('album-pwd-setup-save');
-  const pwdSetupSkip = document.getElementById('album-pwd-setup-skip');
-  if (pwdSetupSave) pwdSetupSave.onclick = setupAlbumPassword;
-  if (pwdSetupSkip) pwdSetupSkip.onclick = skipAlbumPasswordSetup;
-  const pwdNewInput = document.getElementById('album-pwd-new');
-  const pwdConfirm2Input = document.getElementById('album-pwd-confirm2');
-  if (pwdNewInput) pwdNewInput.onkeydown = (e) => {
-    if (e.key === 'Enter') setupAlbumPassword();
-    if (e.key === 'Escape') cancelAlbumPassword();
-  };
-  if (pwdConfirm2Input) pwdConfirm2Input.onkeydown = (e) => {
-    if (e.key === 'Enter') setupAlbumPassword();
     if (e.key === 'Escape') cancelAlbumPassword();
   };
 

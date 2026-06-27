@@ -34,10 +34,12 @@ jobs:
         run: npm run build
         env:
           # Supabase 图床 — 从 GitHub Secrets 读取（构建时内联到 JS）
-          # AI 密钥和相册密码不在此注入，由用户在页面中自行配置
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SUPABASE_BUCKET: ${{ vars.VITE_SUPABASE_BUCKET }}
+          # 相册上传密码（构建时注入 SHA-256 哈希，不明文暴露）
+          # AI 密钥不在此注入，由用户在页面中自行配置
+          ALBUM_PASSWORD: ${{ secrets.ALBUM_PASSWORD }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -6,7 +6,6 @@ import SUPABASE_CONFIG from './supabase.config.js';
 
 const CONFIG_KEY = 'supabase-config';
 const PHOTOS_KEY = 'album-photos';
-const ALBUM_PWD_KEY = 'album-password';
 
 // ── 配置管理 ───────────────────────────────
 
@@ -28,16 +27,23 @@ export function saveConfig(cfg) {
   try { localStorage.setItem(CONFIG_KEY, JSON.stringify(toSave)); } catch { /* ignore */ }
 }
 
-// ── 相册密码管理（独立存储，避免构建时内联） ──
+// ── 相册密码验证（SHA-256 哈希比对） ──
 
-/** 读取相册密码（从 localStorage） */
-export function loadAlbumPassword() {
-  try { return localStorage.getItem(ALBUM_PWD_KEY) || ''; } catch { return ''; }
+/** 是否启用相册密码锁 */
+export function isAlbumPasswordEnabled() {
+  return typeof __ALBUM_PWD_HASH__ !== 'undefined' && __ALBUM_PWD_HASH__ !== '';
 }
 
-/** 保存相册密码（到 localStorage） */
-export function saveAlbumPassword(pwd) {
-  try { localStorage.setItem(ALBUM_PWD_KEY, pwd || ''); } catch { /* ignore */ }
+/** 对用户输入做 SHA-256 后与构建时注入的哈希比对 */
+export async function verifyAlbumPassword(inputPwd) {
+  if (!isAlbumPasswordEnabled()) return true; // 无密码，直接放行
+  if (!inputPwd) return false;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(inputPwd);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return inputHash === __ALBUM_PWD_HASH__;
 }
 
 // ── 照片列表管理 ───────────────────────────
