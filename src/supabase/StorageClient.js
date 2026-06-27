@@ -140,6 +140,31 @@ export class StorageClient {
     return this._client;
   }
 
+  /** 从 Supabase Storage 列出云端所有照片 */
+  async listPhotos() {
+    const client = this._getClient();
+    if (!client) return [];
+    const { bucketName } = this.config;
+    try {
+      const { data, error } = await client.storage
+        .from(bucketName)
+        .list('', { sortBy: { column: 'created_at', order: 'desc' }, limit: 200 });
+      if (error || !data) return [];
+      return data
+        .filter(f => !f.name.startsWith('.') && f.metadata?.size > 0) // 排除隐藏/空文件
+        .map(f => {
+          const { data: urlData } = client.storage.from(bucketName).getPublicUrl(f.name);
+          return {
+            id: f.name.replace(/\.[^.]+$/, ''),
+            url: urlData.publicUrl,
+            caption: f.name.replace(/\.[^.]+$/, ''),
+            date: f.created_at ? new Date(f.created_at).toISOString().slice(0, 10) : '',
+            path: f.name,
+          };
+        });
+    } catch { return []; }
+  }
+
   /** 上传照片到 Supabase Storage */
   async uploadPhoto(file, onProgress) {
     const client = this._getClient();

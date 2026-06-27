@@ -535,6 +535,9 @@ function cancelAlbumPassword() {
   albumPendingAction = null;
 }
 
+// 当前相册照片列表（云端拉取后缓存）
+let currentAlbumPhotos = [];
+
 function showAlbumOverlay() {
   bindOverlayClose('album-overlay', 'album-close');
   document.getElementById('album-overlay').classList.add('visible');
@@ -542,8 +545,26 @@ function showAlbumOverlay() {
   document.getElementById('album-empty').style.display = 'none';
   document.getElementById('album-uploading').style.display = 'none';
 
+  // 从云端拉取照片列表（其他人也能看到）
   if (storageClient.isConfigured()) {
-    renderAlbumGrid();
+    storageClient.listPhotos().then(cloudPhotos => {
+      // 合并本地自定义标题（localStorage 中的 caption 覆盖云端的）
+      const localPhotos = loadPhotos$1();
+      const localCaptionMap = {};
+      localPhotos.forEach(p => { if (p.id && p.caption) localCaptionMap[p.id] = p.caption; });
+      currentAlbumPhotos = cloudPhotos.map(p => ({
+        ...p,
+        caption: localCaptionMap[p.id] || p.caption,
+      }));
+      renderAlbumGrid(currentAlbumPhotos);
+    }).catch(() => {
+      // 云端失败则 fallback localStorage
+      currentAlbumPhotos = loadPhotos$1();
+      renderAlbumGrid(currentAlbumPhotos);
+    });
+  } else {
+    currentAlbumPhotos = loadPhotos$1();
+    renderAlbumGrid(currentAlbumPhotos);
   }
 
   // 上传按钮（需要密码验证）
@@ -593,8 +614,8 @@ function showAlbumOverlay() {
   if (lbDelete) lbDelete.onclick = (e) => { e.stopPropagation(); requestAlbumAuth(handleAlbumDelete); };
 }
 
-function renderAlbumGrid() {
-  const photos = loadPhotos$1();
+function renderAlbumGrid(photos) {
+  if (!photos) photos = currentAlbumPhotos;
   const grid = document.getElementById('album-grid');
   const emptyEl = document.getElementById('album-empty');
   const countEl = document.getElementById('album-count');
@@ -627,7 +648,7 @@ let lightboxPhotos = [];     // 当前相册全部照片列表
 let lightboxIndex = 0;       // 当前照片在列表中的索引
 
 function openAlbumLightbox(photo) {
-  lightboxPhotos = loadPhotos$1();
+  lightboxPhotos = currentAlbumPhotos;
   lightboxIndex = lightboxPhotos.findIndex(p => p.id === photo.id);
   if (lightboxIndex < 0) lightboxIndex = 0;
   showLightboxPhoto();
@@ -686,6 +707,9 @@ function finishRenameCaption() {
   const photo = lightboxPhotos[lightboxIndex];
   if (photo && photo.caption !== newCaption) {
     photo.caption = newCaption;
+    // 同步更新 currentAlbumPhotos 中对应照片的标题
+    const idx = currentAlbumPhotos.findIndex(p => p.id === photo.id);
+    if (idx >= 0) currentAlbumPhotos[idx].caption = newCaption;
     storageClient.updateCaption(photo.id, newCaption);
     showNotification(`✏️ 已更名为「${newCaption}」`);
     audio.playSFX('click');
@@ -730,7 +754,21 @@ async function handleAlbumUpload(e) {
 
   uploadEl.style.display = 'none';
   e.target.value = ''; // 清空文件输入
-  renderAlbumGrid();
+  // 重新拉取云端列表
+  if (storageClient.isConfigured()) {
+    storageClient.listPhotos().then(cloudPhotos => {
+      const localPhotos = loadPhotos$1();
+      const localCaptionMap = {};
+      localPhotos.forEach(p => { if (p.id && p.caption) localCaptionMap[p.id] = p.caption; });
+      currentAlbumPhotos = cloudPhotos.map(p => ({
+        ...p,
+        caption: localCaptionMap[p.id] || p.caption,
+      }));
+      renderAlbumGrid(currentAlbumPhotos);
+    });
+  } else {
+    renderAlbumGrid();
+  }
   if (uploaded > 0) {
     showNotification(`✅ 成功上传 ${uploaded} 张照片`);
     audio.playSFX('success');
@@ -742,17 +780,29 @@ async function handleAlbumDelete() {
   const photoId = currentLightboxPhoto.id;
   try {
     await storageClient.deletePhoto(photoId);
-    // 删除后刷新列表，尝试跳到下一张或上一张
-    lightboxPhotos = loadPhotos$1();
     audio.playSFX('click');
+    // 重新拉取云端列表
+    if (storageClient.isConfigured()) {
+      currentAlbumPhotos = await storageClient.listPhotos();
+      const localPhotos = loadPhotos$1();
+      const localCaptionMap = {};
+      localPhotos.forEach(p => { if (p.id && p.caption) localCaptionMap[p.id] = p.caption; });
+      currentAlbumPhotos = currentAlbumPhotos.map(p => ({
+        ...p,
+        caption: localCaptionMap[p.id] || p.caption,
+      }));
+    } else {
+      currentAlbumPhotos = loadPhotos$1();
+    }
+    lightboxPhotos = currentAlbumPhotos;
     if (lightboxPhotos.length === 0) {
       closeAlbumLightbox();
-      renderAlbumGrid();
+      renderAlbumGrid(currentAlbumPhotos);
       showNotification('🗑️ 照片已删除');
     } else {
       if (lightboxIndex >= lightboxPhotos.length) lightboxIndex = lightboxPhotos.length - 1;
       showLightboxPhoto();
-      renderAlbumGrid();
+      renderAlbumGrid(currentAlbumPhotos);
       showNotification('🗑️ 照片已删除');
     }
   } catch (err) {
