@@ -1,11 +1,12 @@
-// StorageClient.js — Supabase Storage 图床客户端
-// 照片上传/删除/列表 + 配置管理
+// StorageClient.js — Supabase Storage 图床客户端 + 数据库元数据管理
+// 照片上传/删除/列表 + 密码验证
+// 照片元数据存 Supabase 数据库（所有人共享），不再用 localStorage
 
 import { createClient } from '@supabase/supabase-js';
 import SUPABASE_CONFIG from './supabase.config.js';
+import { dbListPhotos, dbInsertPhoto, dbDeletePhoto, dbUpdateCaption } from './DatabaseClient.js';
 
 const CONFIG_KEY = 'supabase-config';
-const PHOTOS_KEY = 'album-photos';
 
 // ── 配置管理 ───────────────────────────────
 
@@ -44,32 +45,6 @@ export async function verifyAlbumPassword(inputPwd) {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   return inputHash === __ALBUM_PWD_HASH__;
-}
-
-// ── 照片列表管理 ───────────────────────────
-
-export function loadPhotos() {
-  try {
-    const raw = localStorage.getItem(PHOTOS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-export function savePhotos(photos) {
-  try { localStorage.setItem(PHOTOS_KEY, JSON.stringify(photos)); } catch { /* ignore */ }
-}
-
-export function addPhoto(photo) {
-  const photos = loadPhotos();
-  photos.unshift(photo); // 最新在前
-  savePhotos(photos);
-  return photos;
-}
-
-export function removePhoto(photoId) {
-  const photos = loadPhotos().filter(p => p.id !== photoId);
-  savePhotos(photos);
-  return photos;
 }
 
 // ── 图片压缩 ───────────────────────────────
@@ -140,32 +115,12 @@ export class StorageClient {
     return this._client;
   }
 
-  /** 从 Supabase Storage 列出云端所有照片 */
+  /** 从数据库读取照片列表（所有人共享） */
   async listPhotos() {
-    const client = this._getClient();
-    if (!client) return [];
-    const { bucketName } = this.config;
-    try {
-      const { data, error } = await client.storage
-        .from(bucketName)
-        .list('', { sortBy: { column: 'created_at', order: 'desc' }, limit: 200 });
-      if (error || !data) return [];
-      return data
-        .filter(f => !f.name.startsWith('.') && f.metadata?.size > 0) // 排除隐藏/空文件
-        .map(f => {
-          const { data: urlData } = client.storage.from(bucketName).getPublicUrl(f.name);
-          return {
-            id: f.name.replace(/\.[^.]+$/, ''),
-            url: urlData.publicUrl,
-            caption: f.name.replace(/\.[^.]+$/, ''),
-            date: f.created_at ? new Date(f.created_at).toISOString().slice(0, 10) : '',
-            path: f.name,
-          };
-        });
-    } catch { return []; }
+    return dbListPhotos();
   }
 
-  /** 上传照片到 Supabase Storage */
+  /** 上传照片到 Supabase Storage + 写入数据库 */
   async uploadPhoto(file, onProgress) {
     const client = this._getClient();
     if (!client) throw new Error('请先配置 Supabase');
@@ -186,7 +141,7 @@ export class StorageClient {
       }
     }
 
-    // 上传
+    // 上传到 Storage
     const { data, error } = await client.storage
       .from(bucketName)
       .upload(path, fileToUpload, {
@@ -210,42 +165,37 @@ export class StorageClient {
       path,
     };
 
-    // 存入本地列表
-    addPhoto(photo);
+    // 写入数据库（所有人共享）
+    await dbInsertPhoto(photo);
 
     return photo;
   }
 
-  /** 删除照片 */
+  /** 删除照片（Storage + 数据库） */
   async deletePhoto(photoId) {
     const client = this._getClient();
-    const photos = loadPhotos();
+
+    // 从数据库获取照片信息（用于 Storage 路径）
+    const photos = await dbListPhotos();
     const photo = photos.find(p => p.id === photoId);
-    if (!photo) throw new Error('照片不存在');
 
     // 从 Storage 删除
-    if (client && photo.path) {
+    if (client && photo && photo.path) {
       try {
         await client.storage
           .from(this.config.bucketName)
           .remove([photo.path]);
-      } catch { /* Storage 删除失败不阻塞本地删除 */ }
+      } catch { /* Storage 删除失败不阻塞数据库删除 */ }
     }
 
-    // 从本地列表移除
-    removePhoto(photoId);
+    // 从数据库删除
+    await dbDeletePhoto(photoId);
     return true;
   }
 
-  /** 更新照片标题 */
-  updateCaption(photoId, caption) {
-    const photos = loadPhotos();
-    const photo = photos.find(p => p.id === photoId);
-    if (photo) {
-      photo.caption = caption;
-      savePhotos(photos);
-    }
-    return photos;
+  /** 更新照片标题（数据库） */
+  async updateCaption(photoId, caption) {
+    return dbUpdateCaption(photoId, caption);
   }
 
   /** 检查是否已配置 */

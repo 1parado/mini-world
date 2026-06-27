@@ -14,8 +14,9 @@ import { AIClient, loadConfig, saveConfig } from './ai/AIClient.js';
 import AI_CONFIG from './ai/ai.config.js';
 
 // 图床（Supabase）
-import { storageClient, loadPhotos as loadPhotos$1, isAlbumPasswordEnabled, verifyAlbumPassword } from './supabase/StorageClient.js';
+import { storageClient, isAlbumPasswordEnabled, verifyAlbumPassword } from './supabase/StorageClient.js';
 import SUPABASE_CONFIG from './supabase/supabase.config.js';
+import { dbListMessages, dbAddMessage, dbListBoardMessages, dbAddBoardMessage, dbListWishes, dbAddWish } from './supabase/DatabaseClient.js';
 
 // 工具
 import { CanvasToolManager } from './tools/CanvasToolManager.js';
@@ -454,17 +455,36 @@ function showBoardOverlay() {
   const board = gameWorld.getZoneByType('board');
   if (!board) return;
   const container = document.getElementById('board-messages');
-  if (container) {
-    container.innerHTML = '';
-    board.messages.forEach(msg => {
-      const div = document.createElement('div');
-      div.className = 'board-message';
-      div.textContent = msg;
-      container.appendChild(div);
-    });
-  }
   bindOverlayClose('board-overlay', 'board-close');
   document.getElementById('board-overlay').classList.add('visible');
+
+  // 从数据库读取公告（所有人共享）
+  const renderBoard = (messages) => {
+    if (!container) return;
+    container.innerHTML = '';
+    if (messages.length === 0) {
+      // fallback 内存初始消息
+      board.messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'board-message';
+        div.textContent = msg;
+        container.appendChild(div);
+      });
+    } else {
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'board-message';
+        div.textContent = msg;
+        container.appendChild(div);
+      });
+    }
+  };
+
+  if (storageClient.isConfigured()) {
+    dbListBoardMessages().then(renderBoard).catch(() => renderBoard(board.messages));
+  } else {
+    renderBoard(board.messages);
+  }
 }
 
 function showShelfOverlay() {
@@ -545,25 +565,17 @@ function showAlbumOverlay() {
   document.getElementById('album-empty').style.display = 'none';
   document.getElementById('album-uploading').style.display = 'none';
 
-  // 从云端拉取照片列表（其他人也能看到）
+  // 从数据库拉取照片列表（所有人共享）
   if (storageClient.isConfigured()) {
     storageClient.listPhotos().then(cloudPhotos => {
-      // 合并本地自定义标题（localStorage 中的 caption 覆盖云端的）
-      const localPhotos = loadPhotos$1();
-      const localCaptionMap = {};
-      localPhotos.forEach(p => { if (p.id && p.caption) localCaptionMap[p.id] = p.caption; });
-      currentAlbumPhotos = cloudPhotos.map(p => ({
-        ...p,
-        caption: localCaptionMap[p.id] || p.caption,
-      }));
+      currentAlbumPhotos = cloudPhotos;
       renderAlbumGrid(currentAlbumPhotos);
     }).catch(() => {
-      // 云端失败则 fallback localStorage
-      currentAlbumPhotos = loadPhotos$1();
+      currentAlbumPhotos = [];
       renderAlbumGrid(currentAlbumPhotos);
     });
   } else {
-    currentAlbumPhotos = loadPhotos$1();
+    currentAlbumPhotos = [];
     renderAlbumGrid(currentAlbumPhotos);
   }
 
@@ -700,7 +712,7 @@ function startRenameCaption() {
   inputEl.select();
 }
 
-function finishRenameCaption() {
+async function finishRenameCaption() {
   const inputEl = document.getElementById('album-lb-caption-input');
   const captionEl = document.getElementById('album-lightbox-caption');
   const newCaption = inputEl.value.trim() || '未命名';
@@ -710,7 +722,7 @@ function finishRenameCaption() {
     // 同步更新 currentAlbumPhotos 中对应照片的标题
     const idx = currentAlbumPhotos.findIndex(p => p.id === photo.id);
     if (idx >= 0) currentAlbumPhotos[idx].caption = newCaption;
-    storageClient.updateCaption(photo.id, newCaption);
+    await storageClient.updateCaption(photo.id, newCaption);
     showNotification(`✏️ 已更名为「${newCaption}」`);
     audio.playSFX('click');
     renderAlbumGrid();
@@ -754,16 +766,10 @@ async function handleAlbumUpload(e) {
 
   uploadEl.style.display = 'none';
   e.target.value = ''; // 清空文件输入
-  // 重新拉取云端列表
+  // 重新从数据库拉取照片列表
   if (storageClient.isConfigured()) {
     storageClient.listPhotos().then(cloudPhotos => {
-      const localPhotos = loadPhotos$1();
-      const localCaptionMap = {};
-      localPhotos.forEach(p => { if (p.id && p.caption) localCaptionMap[p.id] = p.caption; });
-      currentAlbumPhotos = cloudPhotos.map(p => ({
-        ...p,
-        caption: localCaptionMap[p.id] || p.caption,
-      }));
+      currentAlbumPhotos = cloudPhotos;
       renderAlbumGrid(currentAlbumPhotos);
     });
   } else {
@@ -781,18 +787,11 @@ async function handleAlbumDelete() {
   try {
     await storageClient.deletePhoto(photoId);
     audio.playSFX('click');
-    // 重新拉取云端列表
+    // 重新从数据库拉取照片列表
     if (storageClient.isConfigured()) {
       currentAlbumPhotos = await storageClient.listPhotos();
-      const localPhotos = loadPhotos$1();
-      const localCaptionMap = {};
-      localPhotos.forEach(p => { if (p.id && p.caption) localCaptionMap[p.id] = p.caption; });
-      currentAlbumPhotos = currentAlbumPhotos.map(p => ({
-        ...p,
-        caption: localCaptionMap[p.id] || p.caption,
-      }));
     } else {
-      currentAlbumPhotos = loadPhotos$1();
+      currentAlbumPhotos = [];
     }
     lightboxPhotos = currentAlbumPhotos;
     if (lightboxPhotos.length === 0) {
@@ -814,24 +813,37 @@ function showMailboxOverlay() {
   const mailbox = gameWorld.getZoneByType('mailbox');
   if (!mailbox) return;
   const container = document.getElementById('mailbox-messages');
-  if (container) {
+  bindOverlayClose('mailbox-overlay', 'mailbox-close');
+  document.getElementById('mailbox-overlay').classList.add('visible');
+
+  // 从数据库读取留言（所有人共享）
+  const renderMessages = (messages) => {
+    if (!container) return;
     container.innerHTML = '';
-    if (mailbox.messages.length === 0) {
-      const div = document.createElement('div');
-      div.className = 'mailbox-message';
-      div.textContent = '📭 信箱暂时没有新留言';
-      container.appendChild(div);
+    if (messages.length === 0) {
+      // 合并本地内存中的初始欢迎语
+      const allMsgs = mailbox.messages.length > 0 ? mailbox.messages : ['📭 信箱暂时没有新留言'];
+      allMsgs.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'mailbox-message';
+        div.textContent = msg;
+        container.appendChild(div);
+      });
     } else {
-      mailbox.messages.forEach(msg => {
+      messages.forEach(msg => {
         const div = document.createElement('div');
         div.className = 'mailbox-message';
         div.textContent = msg;
         container.appendChild(div);
       });
     }
+  };
+
+  if (storageClient.isConfigured()) {
+    dbListMessages().then(renderMessages).catch(() => renderMessages(mailbox.messages));
+  } else {
+    renderMessages(mailbox.messages);
   }
-  bindOverlayClose('mailbox-overlay', 'mailbox-close');
-  document.getElementById('mailbox-overlay').classList.add('visible');
 
   // 留言发送
   const sendBtn = document.getElementById('mailbox-send');
@@ -840,9 +852,14 @@ function showMailboxOverlay() {
     sendBtn.onclick = () => {
       const text = inputField.value.trim();
       if (text) {
-        mailbox.addMessage(text);
+        mailbox.addMessage(text); // 内存缓存
         inputField.value = '';
-        showMailboxOverlay();
+        // 写入数据库
+        if (storageClient.isConfigured()) {
+          dbAddMessage(text).then(() => showMailboxOverlay());
+        } else {
+          showMailboxOverlay();
+        }
         showNotification('✉️ 留言已投递！');
       }
     };
@@ -1487,16 +1504,27 @@ function renderWishUI() {
 
   const listEl = document.getElementById('wish-list');
   const countEl = document.getElementById('wish-count');
-  if (countEl) countEl.textContent = wish.coinCount;
 
-  if (listEl) {
-    listEl.innerHTML = '';
-    for (const w of wish.wishes) {
-      const item = document.createElement('div');
-      item.className = 'wish-item';
-      item.textContent = '🪙 ' + w.text;
-      listEl.appendChild(item);
+  // 从数据库读取愿望（所有人共享）
+  const renderWishes = (data) => {
+    if (countEl) countEl.textContent = data.coinCount;
+    if (listEl) {
+      listEl.innerHTML = '';
+      for (const w of data.wishes) {
+        const item = document.createElement('div');
+        item.className = 'wish-item';
+        item.textContent = '🪙 ' + w.text;
+        listEl.appendChild(item);
+      }
     }
+  };
+
+  if (storageClient.isConfigured()) {
+    dbListWishes().then(renderWishes).catch(() => {
+      renderWishes({ wishes: wish.wishes, coinCount: wish.coinCount });
+    });
+  } else {
+    renderWishes({ wishes: wish.wishes, coinCount: wish.coinCount });
   }
 
   const inputEl = document.getElementById('wish-input');
@@ -1505,13 +1533,18 @@ function renderWishUI() {
     tossBtn.onclick = () => {
       const text = inputEl ? inputEl.value.trim() : '';
       if (!text) { showNotification('请先写下你的愿望 ✨'); return; }
-      wish.addWish(text);
+      wish.addWish(text); // 内存缓存
       if (inputEl) inputEl.value = '';
       showNotification('🪙 许愿成功！愿望已沉入池底');
       // 涟漪动画
       const pond = document.querySelector('.wish-pond');
       if (pond) { pond.classList.remove('ripple'); void pond.offsetWidth; pond.classList.add('ripple'); }
-      renderWishUI();
+      // 写入数据库后刷新
+      if (storageClient.isConfigured()) {
+        dbAddWish(text).then(() => renderWishUI());
+      } else {
+        renderWishUI();
+      }
     };
   }
 }
