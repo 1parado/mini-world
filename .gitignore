@@ -6,6 +6,16 @@ dist
 .env
 .env.local
 .env.*.local
+.env.local.*
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.staging
+.env.staging.local
+.env.test
+.env.test.local
+!.env.example
 
 # Supabase 本地临时文件（含数据库连接串）
 supabase/.temp/
@@ -40,3 +50,8 @@ yarn-error.log*
 *.key
 *.cert
 *.crt
+*.cer
+*.pfx
+*.p12
+*.jks
+*.keystore

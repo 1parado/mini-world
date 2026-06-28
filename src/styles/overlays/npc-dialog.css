@@ -1,0 +1,73 @@
+/* npc-dialog.css — NPC 对话气泡手绘风格 */
+#npc-dialog-overlay {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#npc-dialog-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.npc-dialog-bubble {
+  background: #FFFDE7;
+  border: 2.5px solid #8B7355;
+  border-radius: 18px 18px 18px 4px;
+  padding: 16px 22px 14px;
+  max-width: 340px;
+  min-width: 180px;
+  box-shadow: 3px 4px 0 rgba(139,115,85,0.18);
+  position: relative;
+  font-family: 'Caveat', cursive;
+}
+.npc-dialog-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 24px;
+  width: 0; height: 0;
+  border: 7px solid transparent;
+  border-top-color: #8B7355;
+  border-right-color: transparent;
+}
+
+#npc-dialog-name {
+  font-size: 17px;
+  font-weight: bold;
+  color: #3E2723;
+  margin-bottom: 4px;
+}
+
+#npc-dialog-text {
+  font-size: 15px;
+  color: #2C2C3A;
+  line-height: 1.5;
+}
+
+.npc-dialog-btn {
+  display: block;
+  margin: 10px auto 0;
+  padding: 4px 18px;
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  background: #FFF8E1;
+  border: 1.5px solid #8B7355;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #5D4037;
+  transition: background 0.15s;
+}
+.npc-dialog-btn:hover {
+  background: #FFE0B2;
+}
+.npc-dialog-btn:active {
+  background: #FFCC80;
+}

@@ -5,6 +5,10 @@ import { NotebookWorld } from './core/NotebookWorld.js';
 import { PlayerProgress } from './systems/PlayerProgress.js';
 import { initProgressHUD, closeBadgePanel, isBadgePanelOpen } from './systems/progressHUD.js';
 import { spawnStarBurst } from './systems/CelebrationFX.js';
+import { getPhaseLabel } from './systems/DayNightSystem.js';
+import { playIntroAnimation, shouldPlayIntro } from './systems/IntroAnimation.js';
+import { EasterEggs } from './systems/EasterEggs.js';
+import { Backpack } from './systems/Backpack.js';
 
 // 2D探索世界
 import { GameWorld } from './world/GameWorld.js';
@@ -91,6 +95,9 @@ import './styles/overlays/inkwell.css';
 import './styles/overlays/origami.css';
 import './styles/overlays/sticker.css';
 import './styles/overlays/abacus.css';
+import './styles/overlays/npc-dialog.css';
+import './styles/overlays/diy-overlay.css';
+import './styles/overlays/backpack.css';
 import './styles/progress.css';
 import './styles/celebration.css';
 import './styles/overlays/zones-new.css';
@@ -132,6 +139,9 @@ import * as origamiOverlay from './overlays/origamiOverlay.js';
 import * as stickerOverlay from './overlays/stickerOverlay.js';
 import * as abacusOverlay from './overlays/abacusOverlay.js';
 import * as capsuleOverlay from './overlays/capsuleOverlay.js';
+import * as npcDialogOverlay from './overlays/npcDialogOverlay.js';
+import * as diyOverlay from './overlays/diyOverlay.js';
+import * as backpackOverlay from './overlays/backpackOverlay.js';
 
 // Overlay 名 → 模块 映射表
 const OVERLAY_MAP = {
@@ -144,6 +154,9 @@ const OVERLAY_MAP = {
   cooking: cookingOverlay, map: mapOverlay, chat: chatOverlay, search: searchOverlay,
   sharpener: sharpenerOverlay, inkwell: inkwellOverlay, origami: origamiOverlay,
   sticker: stickerOverlay, abacus: abacusOverlay, capsule: capsuleOverlay,
+  npcDialog: npcDialogOverlay,
+  diy: diyOverlay,
+  backpack: backpackOverlay,
 };
 
 // ============================================================
@@ -181,6 +194,9 @@ const input = {
 };
 let currentMode = 'explore';
 
+// ── 彩蛋系统 ──
+const easterEggs = new EasterEggs();
+
 // 所有弹出层 overlay ID 列表
 const ALL_OVERLAY_IDS = [
   'board-overlay', 'shelf-overlay', 'coffee-overlay', 'album-overlay',
@@ -192,6 +208,9 @@ const ALL_OVERLAY_IDS = [
   'chat-overlay', 'search-overlay',
   'sharpener-overlay', 'inkwell-overlay', 'origami-overlay', 'sticker-overlay', 'abacus-overlay', 'capsule-overlay',
   'badge-overlay',
+  'npc-dialog-overlay',
+  'diy-overlay',
+  'backpack-overlay',
 ];
 
 // ============================================================
@@ -209,6 +228,19 @@ setLoadingProgress(40, '构建世界中...');
 const gameWorld = new GameWorld((zoneType) => {
   handleZoneInteract(zoneType);
 });
+// NPC 互动回调
+gameWorld.onNPCInteract = (npc) => {
+  audio.playSFX('interact');
+  haptic('medium');
+  npcDialogOverlay.show(npc.name, npc.getRandomDialog());
+  setMode('npcDialog');
+};
+// 🎒 放置模式回调：进入放置模式时显示提示
+gameWorld.onEnterPlaceMode = (decoName) => {
+  showNotification(`📐 放置模式：${decoName} — 点击放置，空格放在脚下，ESC取消`);
+  const hint = document.getElementById('place-mode-hint');
+  if (hint) hint.classList.add('visible');
+};
 gameWorld.resize(canvas.width, canvas.height);
 gameWorld.cameraX = Math.max(0, Math.min(WORLD_W - canvas.width, gameWorld.player.x - canvas.width / 2));
 gameWorld.cameraY = Math.max(0, Math.min(WORLD_H - canvas.height, gameWorld.player.y - canvas.height / 2));
@@ -228,6 +260,10 @@ if (minimapCanvas) {
 
 // 墨水币 + 成就系统
 const progress = new PlayerProgress();
+
+// 🎒 背包系统
+const backpack = new Backpack();
+window._backpack = backpack;
 
 // 移动端检测（提前定义，多处需要）
 const IS_MOBILE = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -512,6 +548,12 @@ function syncToolName(toolId) {
 // ============================================================
 
 document.addEventListener('keydown', (e) => {
+  // 开场动画期间忽略所有输入
+  if (currentMode === 'intro') return;
+
+  // 彩蛋检测（在所有模式中生效）
+  easterEggs.onKeydown(e.code);
+
   // 首次交互时激活音频上下文
   audio.resume();
 
@@ -559,8 +601,18 @@ document.addEventListener('keydown', (e) => {
     if (pwdPanel && pwdPanel.classList.contains('visible')) { albumOverlay.cancelAlbumPassword(); return; }
     // 成就面板 ESC 关闭
     if (isBadgePanelOpen()) { closeBadgePanel(); return; }
+    // 🎒 放置模式取消：退回物品到背包
+    if (gameWorld.pendingPlacement) {
+      backpack.addItem(gameWorld.pendingPlacement.type, gameWorld.pendingPlacement.name, gameWorld.pendingPlacement.type.startsWith('pixel_') ? 'pixel_art' : 'decoration');
+      gameWorld.pendingPlacement = null;
+      const hint = document.getElementById('place-mode-hint');
+      if (hint) hint.classList.remove('visible');
+      showNotification('↩️ 已取消放置，物品退回背包');
+      return;
+    }
     if (currentMode !== 'explore') {
       e.preventDefault();
+      if (currentMode === 'npcDialog') npcDialogOverlay.hide();
       musicOverlay.stopMelody();
       sharpenerOverlay.stopGame();
       hourglassOverlay.clearTimer();
@@ -578,6 +630,22 @@ document.addEventListener('keydown', (e) => {
     if (e.code === 'KeyF' && !input._interactPressed) { input.interact = true; input._interactPressed = true; }
     if (e.code === 'KeyM') { const vis = toggleMinimap(); showNotification(vis ? '🗺️ 小地图已开启' : '🗺️ 小地图已关闭'); }
     if (e.code === 'Enter' && !isChatMode) { isChatMode = true; chatUI.show(); }
+    // 🎒 B 键打开背包
+    if (e.code === 'KeyB') { setMode('backpack'); }
+    // 空格键：放置模式下在玩家脚下放置
+    if (e.code === 'Space' && gameWorld.pendingPlacement) {
+      e.preventDefault();
+      const pp = gameWorld.pendingPlacement;
+      const placed = gameWorld.placeDecorationAt(pp.type, gameWorld.player.x, gameWorld.player.y);
+      if (placed) {
+        backpack.removeItem(pp.type);
+        audio.playSFX('interact');
+        showNotification(`✅ ${pp.name} 已放置！`);
+      }
+      gameWorld.pendingPlacement = null;
+      const hint = document.getElementById('place-mode-hint');
+      if (hint) hint.classList.remove('visible');
+    }
   }
 
   if (currentMode === 'writing') {
@@ -587,6 +655,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('keyup', (e) => {
+  easterEggs.onKeyup(e.code);
   if (e.code === 'KeyW' || e.code === 'ArrowUp') input.up = false;
   if (e.code === 'KeyS' || e.code === 'ArrowDown') input.down = false;
   if (e.code === 'KeyA' || e.code === 'ArrowLeft') input.left = false;
@@ -600,6 +669,30 @@ document.addEventListener('keyup', (e) => {
 
 canvas.addEventListener('mousedown', (e) => {
   audio.resume(); // 首次交互激活音频
+  if (currentMode === 'explore' && gameWorld.pendingPlacement) {
+    // 🎒 放置模式下：左键放置，右键取消
+    if (e.button === 0) {
+      const world = gameWorld.screenToWorld(e.clientX, e.clientY);
+      const pp = gameWorld.pendingPlacement;
+      const placed = gameWorld.placeDecorationAt(pp.type, world.x, world.y);
+      if (placed) {
+        backpack.removeItem(pp.type);
+        audio.playSFX('interact');
+        showNotification(`✅ ${pp.name} 已放置！`);
+      }
+      gameWorld.pendingPlacement = null;
+      const hint = document.getElementById('place-mode-hint');
+      if (hint) hint.classList.remove('visible');
+    } else if (e.button === 2) {
+      // 右键取消，退回背包
+      backpack.addItem(gameWorld.pendingPlacement.type, gameWorld.pendingPlacement.name, gameWorld.pendingPlacement.type.startsWith('pixel_') ? 'pixel_art' : 'decoration');
+      gameWorld.pendingPlacement = null;
+      const hint = document.getElementById('place-mode-hint');
+      if (hint) hint.classList.remove('visible');
+      showNotification('↩️ 已取消放置，物品退回背包');
+    }
+    return;
+  }
   if (currentMode === 'explore' && e.button === 0) {
     const world = gameWorld.screenToWorld(e.clientX, e.clientY);
     gameWorld.player.navigateTo(world.x, world.y);
@@ -611,6 +704,12 @@ canvas.addEventListener('mousedown', (e) => {
 canvas.addEventListener('mousemove', (e) => {
   if (currentMode === 'writing' && toolManager.activeToolName === 'eraser') {
     eraserTool.updateCursorPosition(e.clientX, e.clientY);
+  }
+  // 🎒 放置模式：跟踪鼠标世界坐标
+  if (currentMode === 'explore' && gameWorld.pendingPlacement) {
+    const world = gameWorld.screenToWorld(e.clientX, e.clientY);
+    gameWorld.placeModeMouseX = world.x;
+    gameWorld.placeModeMouseY = world.y;
   }
 });
 
@@ -643,6 +742,22 @@ if (IS_MOBILE) {
     audio.resume();
     const touch = e.touches[0];
     const world = gameWorld.screenToWorld(touch.clientX, touch.clientY);
+
+    // 🎒 放置模式：触摸即放置
+    if (gameWorld.pendingPlacement) {
+      const pp = gameWorld.pendingPlacement;
+      const placed = gameWorld.placeDecorationAt(pp.type, world.x, world.y);
+      if (placed) {
+        backpack.removeItem(pp.type);
+        audio.playSFX('interact');
+        showNotification(`✅ ${pp.name} 已放置！`);
+      }
+      gameWorld.pendingPlacement = null;
+      const hint = document.getElementById('place-mode-hint');
+      if (hint) hint.classList.remove('visible');
+      return;
+    }
+
     gameWorld.player.navigateTo(world.x, world.y);
     spawnClickRipple(world.x, world.y);
     audio.playSFX('click');
@@ -660,6 +775,15 @@ if (IS_MOBILE) {
     if (currentMode === 'writing' && toolManager.activeToolName === 'eraser') {
       const touch = e.touches[0];
       if (touch) eraserTool.updateCursorPosition(touch.clientX, touch.clientY);
+    }
+    // 🎒 放置模式：触摸移动更新预览位置
+    if (currentMode === 'explore' && gameWorld.pendingPlacement) {
+      const touch = e.touches[0];
+      if (touch) {
+        const world = gameWorld.screenToWorld(touch.clientX, touch.clientY);
+        gameWorld.placeModeMouseX = world.x;
+        gameWorld.placeModeMouseY = world.y;
+      }
     }
   }, { passive: true });
 }
@@ -685,7 +809,15 @@ function updateInteractButton(nearZone) {
 if (interactBtn) {
   interactBtn.addEventListener('click', () => {
     const nz = interactBtn._nearZone;
-    if (nz) {
+    const nearNPC = gameWorld.activeNearNPC;
+    if (nearNPC) {
+      // NPC 互动
+      audio.playSFX('interact');
+      haptic('medium');
+      npcDialogOverlay.show(nearNPC.name, nearNPC.getRandomDialog());
+      setMode('npcDialog');
+      interactBtn.classList.remove('visible');
+    } else if (nz) {
       handleZoneInteract(nz.type);
       interactBtn.classList.remove('visible');
     }
@@ -697,6 +829,19 @@ if (IS_MOBILE) {
   const hudHint = document.querySelector('#explore-hud > span:first-child');
   if (hudHint) hudHint.textContent = '点击移动 · 靠近场景互动';
 }
+
+// NPC 对话框关闭按钮
+const npcDialogCloseBtn = document.getElementById('npc-dialog-close');
+if (npcDialogCloseBtn) {
+  npcDialogCloseBtn.addEventListener('click', () => {
+    npcDialogOverlay.hide();
+    setMode('explore');
+  });
+}
+
+// DIY 手工坊标签页初始化 + 进度系统暴露
+window._playerProgress = progress;
+diyOverlay.initDIYTabs();
 
 // ============================================================
 // 多人协作（非阻塞）
@@ -880,25 +1025,32 @@ function finishCharacterCreator() {
 // ── 游戏启动入口 ──────────────────────────────
 let gameLaunched = false;
 
-function launchGame() {
+async function launchGame() {
   if (gameLaunched) return;
   gameLaunched = true;
   hideLoading();
+
+  // 开场动画（首次访问）
+  if (shouldPlayIntro()) {
+    currentMode = 'intro';
+    await playIntroAnimation(canvas, ctx);
+  }
+
+  // 进入角色定制或直接探索
+  const saved = loadPlayerAppearance();
+  const skipNext = localStorage.getItem(PLAYER_APPEARANCE_KEY + '-skip') === 'true';
+  if (saved && skipNext) {
+    gameWorld.setPlayerAppearance(saved);
+    setMode('explore');
+  } else {
+    showCharacterCreator();
+  }
+
   setTimeout(() => { const hint = document.getElementById('explore-controls'); if (hint) hint.style.opacity = '0'; }, 6000);
 }
 
 setTimeout(() => {
-  const saved = loadPlayerAppearance();
-  const skipNext = localStorage.getItem(PLAYER_APPEARANCE_KEY + '-skip') === 'true';
-  // 如果已有保存的外观且用户选择跳过，直接进入
-  if (saved && skipNext) {
-    gameWorld.setPlayerAppearance(saved);
-    launchGame();
-  } else {
-    // 显示角色定制器
-    hideLoading();
-    showCharacterCreator();
-  }
+  launchGame();
 
   // 绑定「开始探索」按钮
   const startBtn = document.getElementById('cc-start-btn');
@@ -915,6 +1067,7 @@ setTimeout(() => {
 
 let lastTime = 0;
 let startTime = 0;
+let _lastDayPhaseUpdate = -1;
 
 const OVERLAY_MODES = Object.keys(OVERLAY_MAP);
 
@@ -946,12 +1099,26 @@ function gameLoop(timestamp) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   switch (currentMode) {
+    case 'intro':
+      // 开场动画自行渲染，此处跳过游戏循环
+      break;
+
     case 'explore':
       gameWorld.update(delta, input);
       input.interact = false;
 
+      // 🎒 放置模式光标
+      canvas.style.cursor = gameWorld.pendingPlacement ? 'crosshair' : 'default';
+
       const nearZone = gameWorld.getNearZone();
-      exploreUI.setTooltip(nearZone ? (IS_MOBILE ? '点击 💬 互动 — ' + nearZone.label : '按 F — ' + nearZone.label) : '');
+      const nearNPC = gameWorld.activeNearNPC;
+      if (nearNPC) {
+        exploreUI.setTooltip(IS_MOBILE ? '点击 💬 互动 — ' + nearNPC.name : '按 F — ' + nearNPC.name);
+      } else if (nearZone) {
+        exploreUI.setTooltip(IS_MOBILE ? '点击 💬 互动 — ' + nearZone.label : '按 F — ' + nearZone.label);
+      } else {
+        exploreUI.setTooltip('');
+      }
 
       // 移动端：浮动互动按钮显隐
       if (IS_MOBILE) updateInteractButton(nearZone);
@@ -961,6 +1128,13 @@ function gameLoop(timestamp) {
 
       // 小地图渲染（仅探索模式）
       renderMinimap(gameWorld, time);
+
+      // 昼夜时段指示器（约每秒刷新）
+      if (Math.floor(time) !== _lastDayPhaseUpdate) {
+        _lastDayPhaseUpdate = Math.floor(time);
+        const dpEl = document.getElementById('dayphase-label');
+        if (dpEl) dpEl.textContent = getPhaseLabel();
+      }
 
       // 移动时播放脚步音效
       if (gameWorld.player.navigating) audio.playSFX('step');
@@ -980,6 +1154,17 @@ function gameLoop(timestamp) {
         ctx.restore();
       }
       break;
+  }
+
+  // ── 彩蛋特效渲染（所有模式之上） ──
+  easterEggs.update(delta);
+  if (easterEggs.hasActiveEffects()) {
+    easterEggs.draw(ctx, canvas.width, canvas.height);
+  }
+  // Konami 彩蛋奖励（一次性）
+  if (easterEggs.isKonamiTriggered() && !easterEggs._konamiRewarded) {
+    easterEggs._konamiRewarded = true;
+    if (progress) progress.earnCoins(50, 'konami_easter_egg');
   }
 }
 

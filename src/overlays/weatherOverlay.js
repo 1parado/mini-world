@@ -1,5 +1,6 @@
 // weatherOverlay.js — 🌤️ 气候站
 import { getCtx } from '../overlays/OverlayContext.js';
+import { spawnWeather } from '../world/WorldRenderer.js';
 
 let weatherAnimFrame = null;
 let weatherParticles = [];
@@ -99,6 +100,11 @@ function renderWeatherUI() {
   btns.forEach(btn => {
     btn.onclick = () => {
       wz.setWeather(btn.dataset.type);
+      // 联动世界天气粒子
+      const type = btn.dataset.type;
+      if (type === 'rainy') spawnWeather('rain');
+      else if (type === 'snowy') spawnWeather('snow');
+      else spawnWeather(null); // 晴/多云/风天 → 无天气粒子
       renderWeatherUI();
     };
   });

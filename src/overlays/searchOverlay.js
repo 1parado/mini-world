@@ -35,6 +35,8 @@ const SEARCHABLE_ZONES = [
   { type: 'sticker',      emoji: '🏷️', label: '贴纸册',      desc: '收集稀有贴纸',           x: 600,  y: 2700 },
   { type: 'abacus',       emoji: '🧮', label: '算盘',         desc: '算术限时挑战',           x: 3400, y: 400  },
   { type: 'capsule',      emoji: '⏰', label: '时光胶囊',     desc: '给未来自己留封信',       x: 1500, y: 2800 },
+  { type: 'diy',          emoji: '🎨', label: '手工坊',       desc: '购买装饰物放入背包自由放置', x: 3200, y: 2800 },
+  { type: 'backpack',     emoji: '🎒', label: '背包容器',     desc: '查看背包中的装饰物',     x: 2000, y: 2000 },
 ];
 
 export function show() {

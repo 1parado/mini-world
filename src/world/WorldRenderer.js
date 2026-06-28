@@ -97,6 +97,83 @@ export function drawEffects(ctx) {
   }
 }
 
+// ==================== 天气粒子（雨/雪） ====================
+
+const weatherParticles = [];
+let activeWeatherType = null; // 'rain' | 'snow' | null
+
+const WEATHER_RAIN_COUNT = 100;
+const WEATHER_SNOW_COUNT = 60;
+const WEATHER_RAIN_SPEED = 420;
+const WEATHER_SNOW_SPEED = 45;
+
+/** 根据天气类型初始化/切换天气粒子（使用 viewport 坐标重生） */
+export function spawnWeather(type) {
+  if (activeWeatherType === type) return;
+  activeWeatherType = type;
+  weatherParticles.length = 0;
+  if (!type) return;
+  const count = type === 'rain' ? WEATHER_RAIN_COUNT : WEATHER_SNOW_COUNT;
+  for (let i = 0; i < count; i++) {
+    weatherParticles.push({
+      x: Math.random() * WORLD_W,
+      y: Math.random() * WORLD_H,
+      speed: type === 'rain'
+        ? WEATHER_RAIN_SPEED * (0.8 + Math.random() * 0.4)
+        : WEATHER_SNOW_SPEED * (0.7 + Math.random() * 0.6),
+      size: type === 'rain' ? 1 + Math.random() * 0.5 : 2 + Math.random() * 2,
+      drift: Math.random() * Math.PI * 2, // 雪花漂移相位
+    });
+  }
+}
+
+/** 每帧更新天气粒子位置 */
+export function updateWeather(delta, windLevel = 2) {
+  if (!activeWeatherType) return;
+  const wind = (windLevel - 2) * 30; // 基准风2级 → 0偏移
+  for (const p of weatherParticles) {
+    p.y += p.speed * delta;
+    if (activeWeatherType === 'snow') {
+      p.x += Math.sin(p.drift + p.y * 0.01) * 15 * delta + wind * delta;
+    } else {
+      p.x += wind * delta * 0.5;
+    }
+    // 重生：超出世界边界则从顶部重新进入
+    if (p.y > WORLD_H) {
+      p.y = -10;
+      p.x = Math.random() * WORLD_W;
+    }
+    if (p.x < 0) p.x += WORLD_W;
+    if (p.x > WORLD_W) p.x -= WORLD_W;
+  }
+}
+
+/** 绘制天气粒子（viewport 裁剪） */
+export function drawWeather(ctx, cameraX, cameraY, vw, vh) {
+  if (!activeWeatherType || weatherParticles.length === 0) return;
+  for (const p of weatherParticles) {
+    // viewport 裁剪
+    if (p.x < cameraX - 10 || p.x > cameraX + vw + 10 ||
+        p.y < cameraY - 10 || p.y > cameraY + vh + 10) continue;
+
+    if (activeWeatherType === 'rain') {
+      ctx.strokeStyle = 'rgba(100,181,246,0.45)';
+      ctx.lineWidth = p.size * 0.8;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x - 1, p.y + p.size * 10);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = `rgba(255,255,255,${0.5 + Math.sin(p.drift) * 0.2})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+export function getActiveWeatherType() { return activeWeatherType; }
+
 // ==================== 纸张背景 ====================
 
 // 缓存两个版本：完全不透明(叠加模式) 和 半透明(探索模式+3D穿透)
@@ -659,19 +736,22 @@ export function drawFlowers(ctx, x, y, time) {
   }
 }
 
-/** 🏮 路灯 */
-export function drawLamp(ctx, x, y, time) {
+/** 🏮 路灯（夜间感知） */
+export function drawLamp(ctx, x, y, time, nightMode = false) {
   ctx.strokeStyle = '#5D4037'; ctx.lineWidth = 3; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.moveTo(x, y + 28); ctx.lineTo(x, y - 24); ctx.stroke();
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(x - 2, y - 24); ctx.quadraticCurveTo(x - 12, y - 30, x - 16, y - 28); ctx.stroke();
-  ctx.fillStyle = '#FFF9C4';
+  ctx.fillStyle = nightMode ? '#FFF8E1' : '#FFF9C4';
   ctx.beginPath(); ctx.ellipse(x - 16, y - 24, 9, 12, -0.2, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = '#8D6E63'; ctx.lineWidth = 1.2; ctx.stroke();
-  // 灯光光晕
-  const glow = 0.12 + Math.sin(time * 3) * 0.03;
+  // 灯光光晕 — 白天微弱/夜间增强
+  const glow = nightMode
+    ? 0.18 + Math.sin(time * 3) * 0.06
+    : 0.12 + Math.sin(time * 3) * 0.03;
+  const glowR = nightMode ? 55 : 22;
   ctx.fillStyle = `rgba(255,249,196,${glow})`;
-  ctx.beginPath(); ctx.arc(x - 16, y - 24, 22, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x - 16, y - 24, glowR, 0, Math.PI * 2); ctx.fill();
 }
 
 /** ✈️ 纸飞机 */
@@ -2317,6 +2397,91 @@ export function drawTimeCapsule(ctx, x, y, time) {
     ctx.fillText('✦', sx + Math.sin(time + i) * 3, sy + Math.cos(time * 1.5 + i) * 2);
   });
   ctx.textAlign = 'start';
+}
+
+// ==================== 手工坊 ====================
+
+export function drawDIYWorkshop(ctx, x, y, time) {
+  const w = 200, h = 170;
+  const cx = x + w / 2, cy = y + h / 2;
+
+  // 阴影
+  ctx.fillStyle = 'rgba(44,44,58,0.06)';
+  ctx.fillRect(x + 4, y + 4, w, h);
+
+  // 工作台
+  ctx.fillStyle = '#A1887F';
+  ctx.fillRect(x + 20, y + h - 45, w - 40, 30);
+  sketchRect(ctx, x + 20, y + h - 45, w - 40, 30, { stroke: KRAFT, width: 1.5, sketch: 0.5 });
+
+  // 台面工具架
+  ctx.fillStyle = '#8D6E63';
+  ctx.fillRect(x + 30, y + h - 70, 10, 25);
+  ctx.fillRect(x + w - 40, y + h - 70, 10, 25);
+
+  // 颜料瓶
+  const bottleColors = ['#EA5455', '#FF9800', '#4CAF50', '#2196F3'];
+  for (let i = 0; i < 4; i++) {
+    const bx = x + 45 + i * 28;
+    const by = y + h - 72 - Math.sin(time * 2 + i) * 1.5;
+    ctx.fillStyle = bottleColors[i];
+    ctx.beginPath(); ctx.roundRect(bx, by, 14, 22, 3); ctx.fill();
+    ctx.fillStyle = '#FFF8E1';
+    ctx.beginPath(); ctx.roundRect(bx + 2, by + 2, 10, 4, 1); ctx.fill();
+    sketchRect(ctx, bx, by, 14, 22, { stroke: GRAPHITE, width: 0.8, jitter: 0.3 });
+  }
+
+  // 画笔筒
+  ctx.fillStyle = '#6D4C41';
+  ctx.beginPath(); ctx.roundRect(cx - 15, y + h - 75, 30, 28, 4); ctx.fill();
+  sketchRect(ctx, cx - 15, y + h - 75, 30, 28, { stroke: '#4E342E', width: 1, sketch: 0.4 });
+  // 画笔
+  for (let i = 0; i < 3; i++) {
+    const bx = cx - 8 + i * 8;
+    const tilt = (i - 1) * 0.15;
+    ctx.save(); ctx.translate(bx, y + h - 75); ctx.rotate(tilt);
+    ctx.strokeStyle = '#8D6E63'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -20 - i * 3); ctx.stroke();
+    ctx.fillStyle = '#EFEBE9'; ctx.beginPath(); ctx.arc(0, -20 - i * 3, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // 顶部横幅
+  ctx.fillStyle = '#FFECB3';
+  ctx.fillRect(x + 25, y + 8, w - 50, 20);
+  sketchRect(ctx, x + 25, y + 8, w - 50, 20, { stroke: KRAFT, width: 1, sketch: 0.4 });
+  ctx.font = 'bold 13px Caveat, cursive';
+  ctx.fillStyle = '#5D4037';
+  ctx.textAlign = 'center';
+  ctx.fillText('🎨 手工坊', cx, y + 23);
+  ctx.textAlign = 'start';
+
+  // 小闪光
+  const sparkleAlpha = 0.2 + 0.15 * Math.sin(time * 3);
+  ctx.fillStyle = `rgba(241,196,15,${sparkleAlpha})`;
+  ctx.font = '10px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('✦', cx - 50, y + 18 + Math.sin(time * 1.5) * 3);
+  ctx.fillText('✦', cx + 50, y + 18 + Math.cos(time * 1.2) * 3);
+  ctx.textAlign = 'start';
+}
+
+// ==================== 夜间灯光叠加层 ====================
+
+/** 夜间路灯 additive glow（需在环境色膜之后调用） */
+export function drawNightLampGlow(ctx, lampPositions, time) {
+  const prevOp = ctx.globalCompositeOperation;
+  ctx.globalCompositeOperation = 'lighter';
+  for (const { x, y } of lampPositions) {
+    const pulse = 0.12 + Math.sin(time * 2.5) * 0.04;
+    const grad = ctx.createRadialGradient(x - 16, y - 24, 5, x - 16, y - 24, 70);
+    grad.addColorStop(0, `rgba(255,245,180,${pulse})`);
+    grad.addColorStop(0.5, `rgba(255,230,140,${pulse * 0.4})`);
+    grad.addColorStop(1, 'rgba(255,230,140,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(x - 16, y - 24, 70, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalCompositeOperation = prevOp;
 }
 
 // ==================== 区域标签 ====================

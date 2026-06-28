@@ -1,0 +1,179 @@
+/* diy-overlay.css — 🎨 手工坊样式 */
+#diy-overlay .zone-modal {
+  max-width: 440px;
+  width: 92vw;
+  max-height: 80vh;
+}
+
+/* 标签页切换 */
+.diy-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  border-bottom: 2px solid rgba(139,115,85,0.2);
+  padding-bottom: 6px;
+}
+.diy-tab-btn {
+  background: none;
+  border: none;
+  font-family: 'Caveat', cursive;
+  font-size: 16px;
+  color: #8B7355;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 8px 8px 0 0;
+  transition: background 0.15s, color 0.15s;
+}
+.diy-tab-btn.active {
+  background: rgba(139,115,85,0.12);
+  color: #2C2C3A;
+  font-weight: bold;
+}
+.diy-tab-btn:hover {
+  background: rgba(139,115,85,0.08);
+}
+
+/* ── 放置装饰 ── */
+.diy-coin-bar {
+  text-align: right;
+  font-family: 'Caveat', cursive;
+  font-size: 15px;
+  color: #8B7355;
+  margin-bottom: 8px;
+}
+.diy-deco-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.diy-deco-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1.5px solid rgba(139,115,85,0.25);
+  border-radius: 10px;
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  background: #FFFEF5;
+}
+.diy-deco-name { flex: 1; }
+.diy-deco-cost { color: #8B7355; font-size: 13px; }
+.diy-deco-buy {
+  background: #FFF8E1;
+  border: 1.5px solid #8B7355;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Caveat', cursive;
+  font-size: 13px;
+  color: #5D4037;
+  padding: 2px 10px;
+  transition: background 0.15s;
+}
+.diy-deco-buy:hover { background: #FFE0B2; }
+.diy-deco-buy:active { background: #FFCC80; }
+
+/* ── 手绘画板 ── */
+.diy-draw-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+#diy-pixel-canvas {
+  border: 2px solid #8B7355;
+  border-radius: 6px;
+  cursor: crosshair;
+  image-rendering: pixelated;
+  background: #FAF5E8;
+  max-width: 260px;
+  max-height: 260px;
+}
+.diy-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+.diy-palette-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.diy-palette-swatch.active {
+  border-color: #2C2C3A;
+  box-shadow: 0 0 4px rgba(44,44,58,0.3);
+}
+.diy-draw-actions {
+  display: flex;
+  gap: 8px;
+}
+.diy-draw-actions button {
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  padding: 3px 14px;
+  border: 1.5px solid #8B7355;
+  border-radius: 8px;
+  background: #FFF8E1;
+  cursor: pointer;
+  color: #5D4037;
+}
+.diy-draw-actions button:hover { background: #FFE0B2; }
+
+/* ── 签名墙 ── */
+.diy-sign-list {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1.5px solid rgba(139,115,85,0.25);
+  border-radius: 8px;
+  padding: 8px;
+  background: #FFFEF5;
+  margin-bottom: 10px;
+}
+.diy-sign-item {
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  color: #2C2C3A;
+  padding: 3px 0;
+  border-bottom: 1px dashed rgba(139,115,85,0.15);
+}
+.diy-sign-input-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.diy-sign-input-row input {
+  flex: 1;
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  padding: 4px 8px;
+  border: 1.5px solid #8B7355;
+  border-radius: 8px;
+  background: #FFFEF5;
+  color: #2C2C3A;
+}
+.diy-sign-input-row input::placeholder { color: rgba(139,115,85,0.4); }
+.diy-author-input {
+  font-family: 'Caveat', cursive;
+  font-size: 13px;
+  padding: 3px 8px;
+  border: 1.5px solid rgba(139,115,85,0.35);
+  border-radius: 8px;
+  background: #FFFEF5;
+  color: #5D4037;
+  width: 120px;
+}
+.diy-sign-submit {
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  padding: 4px 14px;
+  border: 1.5px solid #8B7355;
+  border-radius: 8px;
+  background: #FFF8E1;
+  cursor: pointer;
+  color: #5D4037;
+}
+.diy-sign-submit:hover { background: #FFE0B2; }

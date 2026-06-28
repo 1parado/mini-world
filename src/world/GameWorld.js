@@ -2,6 +2,7 @@
 // 管理地图、区域、装饰物、玩家、相机、粒子效果与渲染
 
 import { Player } from './Player.js';
+import { NPC, INKWELL_SPIRIT_APPEARANCE } from './NPC.js';
 import { NotebookZone } from './zones/NotebookZone.js';
 import { BoardZone } from './zones/BoardZone.js';
 import { ShelfZone } from './zones/ShelfZone.js';
@@ -36,6 +37,7 @@ import { OrigamiZone } from './zones/OrigamiZone.js';
 import { StickerZone } from './zones/StickerZone.js';
 import { AbacusZone } from './zones/AbacusZone.js';
 import { CapsuleZone } from './zones/CapsuleZone.js';
+import { DIYZone } from './zones/DIYZone.js';
 import {
   WORLD_W, WORLD_H, ensureBackground,
   drawNotebook, drawBulletinBoard, drawBookshelf,
@@ -46,12 +48,15 @@ import {
   drawKaleidoscope, drawDiary, drawWeatherStation, drawCookingTable, drawMapWall,
   drawAIDesk, drawSearchDesk,
   drawSharpener, drawInkwell, drawOrigamiTable, drawStickerAlbum, drawAbacus, drawTimeCapsule,
+  drawDIYWorkshop,
   drawCoffeeCup, drawPlant, drawCat, drawPencil, drawPictureFrame,
   drawMushroom, drawFlowers, drawLamp, drawPaperPlane, drawButterfly,
   drawFootprints, drawRock, drawGrassTuft,
   drawPromptBubble, drawPlayer, drawZoneLabel,
   spawnDust, spawnClickRipple, updateEffects, drawEffects,
+  spawnWeather, updateWeather, drawWeather, drawNightLampGlow,
 } from './WorldRenderer.js';
+import { getDayPhase, getAmbientOverlay, isNight, suggestWeather } from '../systems/DayNightSystem.js';
 
 export class GameWorld {
   constructor(onZoneInteract) {
@@ -65,6 +70,13 @@ export class GameWorld {
     this.viewportH = 0;
     this.activeNearZone = null;
     this._prevWalking = false;
+    this._nightMode = isNight();
+    this.npcs = [];
+    this.activeNearNPC = null;
+    this.pendingPlacement = null; // { type, name } 待放置装饰
+    this.placeModeMouseX = 0;
+    this.placeModeMouseY = 0;
+    this.onEnterPlaceMode = null; // callback(decoName) 进入放置模式
 
     this.buildWorld();
   }
@@ -109,6 +121,9 @@ export class GameWorld {
     const abacus = new AbacusZone(3400, 400);
     const capsule = new CapsuleZone(1500, 2800);
 
+    // === 新增 DIY 手工坊 ===
+    const diy = new DIYZone(3200, 2800);
+
     this.zones = [
       notebook, board, shelf, coffee, album, mailbox, graffiti,
       dart, dice, card, spin, music,
@@ -116,6 +131,7 @@ export class GameWorld {
       hourglass, kaleidoscope, diary, weather, cooking, mapZone,
       chat, search,
       sharpener, inkwell, origami, sticker, abacus, capsule,
+      diy,
     ];
 
     // === 绑定交互回调 ===
@@ -152,10 +168,11 @@ export class GameWorld {
     sticker.onInteract = () => this.onZoneInteract('sticker');
     abacus.onInteract = () => this.onZoneInteract('abacus');
     capsule.onInteract = () => this.onZoneInteract('capsule');
+    diy.onInteract = () => this.onZoneInteract('diy');
 
     board.addMessage('欢迎！');
     board.addMessage('手绘笔记本');
-    board.addMessage('靠近场景互动');
+    board.addMessage('欢迎来到Paradox的mini world');
 
     mailbox.addMessage('你好，欢迎来到手绘世界！ ✨');
     mailbox.addMessage('每一笔都是独特的痕迹');
@@ -226,6 +243,29 @@ export class GameWorld {
     ];
 
     ensureBackground();
+
+    // 创建 NPC（墨水瓶精灵系列）
+    this.npcs = [
+      new NPC('inkwell', 1500, 800, [
+        { x: 1500, y: 800 }, { x: 1700, y: 800 }, { x: 1700, y: 1000 }, { x: 1500, y: 1000 },
+      ], INKWELL_SPIRIT_APPEARANCE, 'inkwell', '🖋️ 墨水精灵', 80),
+      new NPC('paper_sprite', 2500, 700, [
+        { x: 2500, y: 700 }, { x: 2800, y: 700 }, { x: 2800, y: 500 }, { x: 2500, y: 500 },
+      ], { ...INKWELL_SPIRIT_APPEARANCE, shirt: '#F9A825', shirtDark: '#F57F17', hat: '#FF8F00', scarf: '#FFF176' }, 'paper_sprite', '📜 纸鹤精灵', 80),
+      new NPC('bookmark', 900, 1800, [
+        { x: 900, y: 1800 }, { x: 1100, y: 1700 }, { x: 900, y: 1600 }, { x: 700, y: 1700 },
+      ], { ...INKWELL_SPIRIT_APPEARANCE, shirt: '#E53935', shirtDark: '#C62828', hat: '#B71C1C', scarf: '#EF9A9A', hatStyle: 'cap' }, 'bookmark', '🔖 书签精灵', 80),
+    ];
+
+    // 基于昼夜时间初始化天气
+    const weatherZone = this.zones.find(z => z.type === 'weather');
+    if (weatherZone) {
+      weatherZone.setWeather(suggestWeather());
+      const weatherType = weatherZone.weather;
+      if (weatherType === 'rainy' || weatherType === 'snowy') {
+        spawnWeather(weatherType === 'rainy' ? 'rain' : 'snow');
+      }
+    }
   }
 
   resize(w, h) {
@@ -238,6 +278,9 @@ export class GameWorld {
 
     this.player.update(delta, input);
 
+    // 更新昼夜状态
+    this._nightMode = isNight();
+
     // 走路扬尘
     if (this.player.isMoving) {
       if (Math.random() < 0.3) {
@@ -247,6 +290,20 @@ export class GameWorld {
 
     // 更新粒子效果
     updateEffects(delta);
+
+    // 更新天气粒子
+    const wz = this.zones.find(z => z.type === 'weather');
+    const windLevel = wz ? wz.windLevel : 2;
+    updateWeather(delta, windLevel);
+
+    // 更新 NPC
+    this.activeNearNPC = null;
+    for (const npc of this.npcs) {
+      npc.update(delta);
+      if (npc.checkPlayer(this.player.x, this.player.y)) {
+        this.activeNearNPC = npc;
+      }
+    }
 
     // 区域靠近检测
     this.activeNearZone = null;
@@ -270,15 +327,22 @@ export class GameWorld {
     this.cameraY = Math.max(0, Math.min(maxCamY, this.cameraY));
 
     // 处理 F 键交互
-    if (input.interact && this.activeNearZone) {
-      if (this.activeNearZone.onInteract) {
-        this.activeNearZone.onInteract();
+    if (input.interact) {
+      if (this.activeNearNPC) {
+        // NPC 互动：打开对话框
+        if (this.onNPCInteract) this.onNPCInteract(this.activeNearNPC);
+      } else if (this.activeNearZone) {
+        if (this.activeNearZone.onInteract) {
+          this.activeNearZone.onInteract();
+        }
       }
     }
   }
 
   render(ctx, time, bgAlpha = 1.0) {
     ctx.save();
+
+    const nightMode = this._nightMode;
 
     // 相机变换
     ctx.translate(-Math.round(this.cameraX), -Math.round(this.cameraY));
@@ -297,7 +361,7 @@ export class GameWorld {
         case 'frame':  drawPictureFrame(ctx, d.x, d.y, time); break;
         case 'mushroom':  drawMushroom(ctx, d.x, d.y, time); break;
         case 'flowers':   drawFlowers(ctx, d.x, d.y, time); break;
-        case 'lamp':      drawLamp(ctx, d.x, d.y, time); break;
+        case 'lamp':      drawLamp(ctx, d.x, d.y, time, nightMode); break;
         case 'paperplane':drawPaperPlane(ctx, d.x, d.y, time); break;
         case 'butterfly': drawButterfly(ctx, d.x, d.y, time); break;
         case 'footprints':drawFootprints(ctx, d.x, d.y); break;
@@ -305,6 +369,27 @@ export class GameWorld {
         case 'grass':     drawGrassTuft(ctx, d.x, d.y, time); break;
       }
     }
+
+    // 2b. DIY 手工坊放置的装饰物
+    const diyZone = this.zones.find(z => z.type === 'diy');
+    if (diyZone && diyZone.placedDecorations) {
+      for (const d of diyZone.placedDecorations) {
+        switch (d.type) {
+          case 'lamp':      drawLamp(ctx, d.x, d.y, time, nightMode); break;
+          case 'mushroom':  drawMushroom(ctx, d.x, d.y, time); break;
+          case 'flowers':   drawFlowers(ctx, d.x, d.y, time); break;
+          case 'rock':      drawRock(ctx, d.x, d.y); break;
+          case 'grass':     drawGrassTuft(ctx, d.x, d.y, time); break;
+          case 'cat':       drawCat(ctx, d.x, d.y, time); break;
+          case 'butterfly': drawButterfly(ctx, d.x, d.y, time); break;
+          case 'paperplane':drawPaperPlane(ctx, d.x, d.y, time); break;
+          case 'frame':     drawPictureFrame(ctx, d.x, d.y, time); break;
+        }
+      }
+    }
+
+    // 2c. DIY 手绘像素画装饰
+    this._drawCustomPixelArt(ctx);
 
     // 3. 交互区域
     for (const zone of this.zones) {
@@ -342,6 +427,7 @@ export class GameWorld {
         case 'sticker':     drawStickerAlbum(ctx, zone.x - zone.w / 2, zone.y - zone.h, time); break;
         case 'abacus':      drawAbacus(ctx, zone.x - zone.w / 2, zone.y - zone.h, time); break;
         case 'capsule':     drawTimeCapsule(ctx, zone.x - zone.w / 2, zone.y - zone.h, time); break;
+        case 'diy':         drawDIYWorkshop(ctx, zone.x - zone.w / 2, zone.y - zone.h, time); break;
       }
       drawZoneLabel(ctx, zone.x, zone.y + 8, zone.label);
 
@@ -359,19 +445,146 @@ export class GameWorld {
       }
     }
 
-    // 4. 玩家
-    drawPlayer(ctx, this.player.x, this.player.y, this.player.direction, this.player.walkFrame, this.activeNearZone !== null, this.player.getAppearance());
+    // 4. NPC（先绘制，让玩家在上层）
+    for (const npc of this.npcs) {
+      npc.draw(ctx, time);
+    }
 
-    // 5. 交互提示气泡
-    if (this.activeNearZone) {
+    // 5. 玩家
+    drawPlayer(ctx, this.player.x, this.player.y, this.player.direction, this.player.walkFrame, this.activeNearZone !== null || this.activeNearNPC !== null, this.player.getAppearance());
+
+    // 6. 交互提示气泡
+    if (this.activeNearNPC) {
+      const pp = this.activeNearNPC.getPromptPosition();
+      drawPromptBubble(ctx, pp.x, pp.y, this.activeNearNPC.name, this.viewportW, this.viewportH);
+    } else if (this.activeNearZone) {
       const pp = this.player.getPromptPosition();
       drawPromptBubble(ctx, pp.x, pp.y, this.activeNearZone.label, this.viewportW, this.viewportH);
     }
 
-    // 6. 粒子效果
+    // 7. 粒子效果
     drawEffects(ctx);
 
+    // 8. 昼夜环境色膜
+    const ambient = getAmbientOverlay();
+    if (ambient.alpha > 0.001) {
+      ctx.globalAlpha = ambient.alpha;
+      ctx.fillStyle = ambient.color;
+      ctx.fillRect(
+        Math.round(this.cameraX) - 10,
+        Math.round(this.cameraY) - 10,
+        this.viewportW + 20,
+        this.viewportH + 20,
+      );
+      ctx.globalAlpha = 1;
+    }
+
+    // 9. 夜间灯光叠加层（additive blending）
+    if (nightMode) {
+      const lampPositions = this.decorations
+        .filter(d => d.type === 'lamp')
+        .map(d => ({ x: d.x, y: d.y }));
+      drawNightLampGlow(ctx, lampPositions, time);
+    }
+
+    // 10. 天气粒子
+    drawWeather(ctx, this.cameraX, this.cameraY, this.viewportW, this.viewportH);
+
+    // 11. 放置模式预览（半透明装饰跟随鼠标）
+    if (this.pendingPlacement) {
+      ctx.globalAlpha = 0.5;
+      const px = this.placeModeMouseX;
+      const py = this.placeModeMouseY;
+      const pType = this.pendingPlacement.type;
+
+      if (pType.startsWith('pixel_')) {
+        // 像素画预览
+        this._drawPixelArtPreview(ctx, pType, px, py);
+      } else {
+        // 常规装饰预览
+        switch (pType) {
+          case 'lamp':      drawLamp(ctx, px, py, time, this._nightMode); break;
+          case 'mushroom':  drawMushroom(ctx, px, py, time); break;
+          case 'flowers':   drawFlowers(ctx, px, py, time); break;
+          case 'rock':      drawRock(ctx, px, py); break;
+          case 'grass':     drawGrassTuft(ctx, px, py, time); break;
+          case 'cat':       drawCat(ctx, px, py, time); break;
+          case 'butterfly': drawButterfly(ctx, px, py, time); break;
+          case 'paperplane':drawPaperPlane(ctx, px, py, time); break;
+          case 'frame':     drawPictureFrame(ctx, px, py, time); break;
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
     ctx.restore();
+  }
+
+  /** 绘制用户手绘的像素画装饰 */
+  _drawCustomPixelArt(ctx) {
+    let drawings;
+    try {
+      drawings = JSON.parse(localStorage.getItem('diy-world-drawings') || '[]');
+    } catch { return; }
+    if (!drawings.length) return;
+    this._renderPixelArtList(ctx, drawings);
+  }
+
+  /** 放置模式下的像素画预览 */
+  _drawPixelArtPreview(ctx, artId, px, py) {
+    try {
+      const store = JSON.parse(localStorage.getItem('diy-pixel-art-store') || '{}');
+      const data = store[artId];
+      if (!data) return;
+      const PIXEL_SIZE = 16;
+      const cellPx = 4;
+      const drawSize = PIXEL_SIZE * cellPx;
+
+      ctx.fillStyle = '#FDFAF3';
+      ctx.strokeStyle = 'rgba(139,115,85,0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(px - 4, py - 4, drawSize + 8, drawSize + 8, 4); ctx.fill(); ctx.stroke();
+      for (let y = 0; y < PIXEL_SIZE; y++) {
+        for (let x = 0; x < PIXEL_SIZE; x++) {
+          const color = data[y * PIXEL_SIZE + x];
+          if (color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(px + x * cellPx, py + y * cellPx, cellPx, cellPx);
+          }
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  /** 渲染像素画列表（共享逻辑） */
+  _renderPixelArtList(ctx, drawings) {
+
+    const PIXEL_SIZE = 16;
+    const cellPx = 4; // 每像素4屏幕像素
+    const drawSize = PIXEL_SIZE * cellPx;
+
+    for (const drawing of drawings) {
+      if (!drawing.data || !Array.isArray(drawing.data)) continue;
+      // 视口裁剪
+      if (drawing.x < this.cameraX - drawSize || drawing.x > this.cameraX + this.viewportW + drawSize ||
+          drawing.y < this.cameraY - drawSize || drawing.y > this.cameraY + this.viewportH + drawSize) continue;
+
+      // 纸质背景框
+      ctx.fillStyle = '#FDFAF3';
+      ctx.strokeStyle = 'rgba(139,115,85,0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(drawing.x - 4, drawing.y - 4, drawSize + 8, drawSize + 8, 4); ctx.fill(); ctx.stroke();
+
+      for (let py = 0; py < PIXEL_SIZE; py++) {
+        for (let px = 0; px < PIXEL_SIZE; px++) {
+          const color = drawing.data[py * PIXEL_SIZE + px];
+          if (color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(drawing.x + px * cellPx, drawing.y + py * cellPx, cellPx, cellPx);
+          }
+        }
+      }
+    }
   }
 
   screenToWorld(screenX, screenY) {
@@ -379,6 +592,29 @@ export class GameWorld {
       x: screenX + this.cameraX,
       y: screenY + this.cameraY,
     };
+  }
+
+  /** 在指定世界坐标放置装饰 */
+  placeDecorationAt(type, x, y) {
+    // 像素画类型特殊处理
+    if (type.startsWith('pixel_')) {
+      try {
+        const pixelArtStore = JSON.parse(localStorage.getItem('diy-pixel-art-store') || '{}');
+        const data = pixelArtStore[type];
+        if (data) {
+          const drawings = JSON.parse(localStorage.getItem('diy-world-drawings') || '[]');
+          drawings.push({ id: type, data: [...data], x, y });
+          localStorage.setItem('diy-world-drawings', JSON.stringify(drawings));
+        }
+      } catch { /* ignore */ }
+    } else {
+      // 常规装饰
+      const zone = this.getZoneByType('diy');
+      if (zone) {
+        zone.addPlacedDecoration({ type, x, y });
+      }
+    }
+    return true;
   }
 
   getNearZone() {

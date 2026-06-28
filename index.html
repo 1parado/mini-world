@@ -94,6 +94,7 @@
   <div id="explore-hud">
     <span>WASD 行走 · 点击移动</span>
     <span id="explore-tooltip"></span>
+    <span id="dayphase-label" style="font-size:13px;opacity:0.7;margin-left:8px;"></span>
     <button id="audio-toggle-btn" title="音效开关" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px 6px;">🔊</button>
   </div>
 
@@ -862,6 +863,64 @@
     </div>
   </div>
 
+  <!-- 🎨 手工坊弹出层 -->
+  <div id="diy-overlay" class="zone-overlay">
+    <div class="zone-modal" id="diy-modal" style="max-width:440px;">
+      <button class="close-btn" id="diy-close">✕</button>
+      <h2>🎨 手工坊</h2>
+      <div class="diy-tabs">
+        <button class="diy-tab-btn active" data-tab="place">放置装饰</button>
+        <button class="diy-tab-btn" data-tab="draw">手绘精灵</button>
+        <button class="diy-tab-btn" data-tab="sign">签名墙</button>
+      </div>
+      <div class="diy-coin-bar"><span id="diy-coin-display">🪙 0</span></div>
+
+      <!-- 放置装饰 -->
+      <div id="diy-place-panel">
+        <div class="diy-deco-list" id="diy-deco-list"></div>
+        <p style="font-family:var(--font-display);font-size:12px;color:var(--text-ghost);margin-top:10px;">购买后装饰进入背包，按 B 打开背包在世界中自由放置</p>
+      </div>
+
+      <!-- 手绘精灵 -->
+      <div id="diy-draw-panel" style="display:none;">
+        <div class="diy-draw-area">
+          <canvas id="diy-pixel-canvas" width="256" height="256"></canvas>
+          <div class="diy-palette" id="diy-palette"></div>
+          <div class="diy-draw-actions">
+            <button id="diy-clear-btn">🗑️ 清空</button>
+            <button id="diy-save-btn">🌍 放入世界</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 签名墙 -->
+      <div id="diy-sign-panel" style="display:none;">
+        <div class="diy-sign-list" id="diy-sign-list">
+          <p style="font-family:var(--font-display);font-size:13px;color:var(--text-ghost);">加载中...</p>
+        </div>
+        <div class="diy-sign-input-row">
+          <input id="diy-sign-author" placeholder="你的名字" class="diy-author-input" />
+          <input id="diy-sign-input" placeholder="留下你的签名..." />
+          <button class="diy-sign-submit" id="diy-sign-submit">✍️ 签名</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🎒 背包弹出层 -->
+  <div id="backpack-overlay" class="zone-overlay">
+    <div class="backpack-modal">
+      <button class="close-btn" id="backpack-close">✕</button>
+      <h2>🎒 背包</h2>
+      <div class="backpack-hint">选择装饰物，在世界中点击放置</div>
+      <div class="backpack-grid" id="backpack-grid"></div>
+      <div id="backpack-empty">背包空空如也~<br>去 🎨 手工坊 购买装饰吧！</div>
+    </div>
+  </div>
+
+  <!-- 放置模式提示条 -->
+  <div id="place-mode-hint">点击放置 · 空格放在脚下 · ESC取消</div>
+
   <!-- 多人面板 -->
   <div id="multiplayer-panel">
     <div class="writer-badge">
@@ -892,6 +951,15 @@
 
   <!-- 通知 -->
   <div id="notifications"></div>
+
+  <!-- NPC 对话气泡 -->
+  <div id="npc-dialog-overlay">
+    <div class="npc-dialog-bubble">
+      <div id="npc-dialog-name">墨水瓶精灵</div>
+      <div id="npc-dialog-text">...</div>
+      <button class="npc-dialog-btn" id="npc-dialog-close">知道了</button>
+    </div>
+  </div>
 
   <script>
     window.addEventListener('error', function(e) {

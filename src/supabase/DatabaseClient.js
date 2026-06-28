@@ -150,3 +150,25 @@ export async function dbAddWish(text) {
   if (error) { console.error('dbAddWish error:', error.message); return false; }
   return true;
 }
+
+// ==================== 签名墙 ====================
+
+export async function dbListSignatures() {
+  const client = getDbClient();
+  if (!client) return [];
+  const { data, error } = await client
+    .from('signatures')
+    .select('text, author, created_at')
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) { console.error('dbListSignatures error:', error.message); return []; }
+  return (data || []).map(row => ({ text: row.text, author: row.author }));
+}
+
+export async function dbAddSignature(text, author = '匿名画家') {
+  const client = getDbClient();
+  if (!client) return false;
+  const { error } = await client.from('signatures').insert({ text, author });
+  if (error) { console.error('dbAddSignature error:', error.message); return false; }
+  return true;
+}
