@@ -622,6 +622,132 @@ export function drawPictureFrame(ctx, x, y, time) {
   ctx.fillStyle = 'rgba(234,84,85,0.3)'; ctx.beginPath(); ctx.arc(x + w - 14, y + 14, 5, 0, Math.PI * 2); ctx.fill();
 }
 
+/* ── 新增装饰类型 ────────────────────── */
+
+/** 🍄 蘑菇 */
+export function drawMushroom(ctx, x, y, time) {
+  const sway = Math.sin(time * 0.8) * 1.5;
+  ctx.fillStyle = 'rgba(212,196,168,0.3)';
+  ctx.beginPath(); ctx.ellipse(x, y + 18, 14, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#EFEBE9';
+  ctx.fillRect(x - 3 + sway * 0.3, y - 4, 6, 22);
+  ctx.strokeStyle = GRAPHITE; ctx.lineWidth = 1; ctx.strokeRect(x - 3 + sway * 0.3, y - 4, 6, 22);
+  ctx.fillStyle = '#E64A19';
+  ctx.beginPath(); ctx.ellipse(x + sway * 0.5, y - 4, 14, 10, 0, Math.PI, 0); ctx.fill();
+  ctx.strokeStyle = GRAPHITE; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.fillStyle = '#FFF';
+  ctx.beginPath(); ctx.arc(x - 5 + sway * 0.5, y - 8, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 4 + sway * 0.5, y - 6, 1.8, 0, Math.PI * 2); ctx.fill();
+}
+
+/** 🌸 花丛 */
+export function drawFlowers(ctx, x, y, time) {
+  const sway = Math.sin(time * 1.2) * 2;
+  ctx.fillStyle = '#4CAF50'; ctx.lineWidth = 2;
+  for (let i = 0; i < 3; i++) {
+    const sx = x + i * 10 - 10;
+    ctx.strokeStyle = '#2E7D32'; ctx.beginPath();
+    ctx.moveTo(sx, y + 8); ctx.quadraticCurveTo(sx + sway * (i + 1) * 0.3, y - 2, sx + sway, y - 8 - i * 2);
+    ctx.stroke();
+    const colors = ['#EA5455', '#FF9800', '#E91E63'];
+    ctx.fillStyle = colors[i];
+    for (let p = 0; p < 5; p++) {
+      const a = p * Math.PI * 2 / 5 + time * 0.1 + i;
+      ctx.beginPath(); ctx.arc(sx + sway + Math.cos(a) * 5, y - 8 - i * 2 + Math.sin(a) * 5, 3.5, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = '#FFC107'; ctx.beginPath(); ctx.arc(sx + sway, y - 8 - i * 2, 2, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+/** 🏮 路灯 */
+export function drawLamp(ctx, x, y, time) {
+  ctx.strokeStyle = '#5D4037'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x, y + 28); ctx.lineTo(x, y - 24); ctx.stroke();
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x - 2, y - 24); ctx.quadraticCurveTo(x - 12, y - 30, x - 16, y - 28); ctx.stroke();
+  ctx.fillStyle = '#FFF9C4';
+  ctx.beginPath(); ctx.ellipse(x - 16, y - 24, 9, 12, -0.2, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#8D6E63'; ctx.lineWidth = 1.2; ctx.stroke();
+  // 灯光光晕
+  const glow = 0.12 + Math.sin(time * 3) * 0.03;
+  ctx.fillStyle = `rgba(255,249,196,${glow})`;
+  ctx.beginPath(); ctx.arc(x - 16, y - 24, 22, 0, Math.PI * 2); ctx.fill();
+}
+
+/** ✈️ 纸飞机 */
+export function drawPaperPlane(ctx, x, y, time) {
+  const hover = Math.sin(time * 1.5) * 4;
+  const tilt = Math.sin(time * 0.8) * 0.08;
+  ctx.save(); ctx.translate(x, y + hover); ctx.rotate(tilt - 0.15);
+  ctx.fillStyle = '#FFFDF5';
+  ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(-12, -10); ctx.lineTo(-4, 0); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = GRAPHITE; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(-4, 0); ctx.strokeStyle = 'rgba(44,44,58,0.15)'; ctx.stroke();
+  ctx.restore();
+}
+
+/** 🦋 蝴蝶 */
+export function drawButterfly(ctx, x, y, time) {
+  const wingFlap = Math.sin(time * 8) * 0.3;
+  const drift = Math.sin(time * 0.6) * 20;
+  const bob = Math.sin(time * 1.2) * 6;
+  ctx.save(); ctx.translate(x + drift, y + bob);
+  ctx.fillStyle = '#9C27B0'; ctx.globalAlpha = 0.6;
+  // 左翅
+  ctx.save(); ctx.scale(1, Math.cos(wingFlap));
+  ctx.beginPath(); ctx.ellipse(-5, 0, 7, 5, -0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-7, 5, 4, 3, -0.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  // 右翅
+  ctx.save(); ctx.scale(1, Math.cos(wingFlap));
+  ctx.beginPath(); ctx.ellipse(5, 0, 7, 5, 0.3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(7, 5, 4, 3, 0.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#4E342E'; ctx.beginPath(); ctx.ellipse(0, 0, 1.5, 6, 0, 0, Math.PI * 2); ctx.fill();
+  // 翅膀白色点缀
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.save(); ctx.scale(1, Math.cos(wingFlap));
+  ctx.beginPath(); ctx.arc(-5, -1, 1.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(5, -1, 1.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.restore();
+}
+
+/** 🐾 脚印路径 */
+export function drawFootprints(ctx, x, y) {
+  ctx.fillStyle = 'rgba(44,44,58,0.06)';
+  for (let i = 0; i < 4; i++) {
+    const fx = x + i * 14;
+    const fy = y + (i % 2 === 0 ? 0 : 4);
+    ctx.beginPath(); ctx.ellipse(fx - 3, fy, 3, 4, -0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(fx + 3, fy + 2, 2.5, 3.5, 0.2, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+/** 🪨 石头 */
+export function drawRock(ctx, x, y) {
+  ctx.fillStyle = '#9E9E9E';
+  ctx.beginPath(); ctx.ellipse(x, y, 10, 7, 0.15, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(44,44,58,0.15)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.beginPath(); ctx.ellipse(x - 3, y - 2, 5, 2.5, -0.2, 0, Math.PI * 2); ctx.fill();
+}
+
+/** 🌿 草丛 */
+export function drawGrassTuft(ctx, x, y, time) {
+  const sway = Math.sin(time * 1.5) * 2;
+  ctx.strokeStyle = '#4CAF50'; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+  for (let i = 0; i < 5; i++) {
+    const angle = -Math.PI * 0.4 + i * 0.2;
+    const len = 12 + i * 3;
+    const sw = sway * (0.5 + i * 0.15);
+    ctx.beginPath(); ctx.moveTo(x + i * 3 - 6, y);
+    ctx.quadraticCurveTo(x + i * 3 - 6 + Math.cos(angle) * len * 0.5 + sw, y + Math.sin(angle) * len * 0.5, x + i * 3 - 6 + Math.cos(angle) * len + sw * 1.5, y + Math.sin(angle) * len);
+    ctx.stroke();
+  }
+}
+
 // ==================== 玩家角色 — 精致手绘小人 ====================
 
 export function drawPlayer(ctx, x, y, direction, walkFrame, interactHint, appearance) {

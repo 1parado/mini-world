@@ -1,0 +1,233 @@
+/* ============================================
+   响应式 — 窄屏
+   ============================================ */
+@media (max-width: 768px) {
+  #toolbar {
+    left: 50%; top: auto; bottom: 56px;
+    transform: translateX(-50%) translateY(0);
+    flex-direction: row;
+    padding: 4px 8px;
+    border-radius: 10px 10px 12px 12px;
+    gap: 0;
+  }
+  #toolbar.visible { display: flex; }
+  .toolbar-buttons { flex-direction: row; gap: 0; }
+  .tool-btn { width: 44px; height: 44px; }
+  .tool-btn.active::before {
+    left: 8px; right: 8px; top: -4px; bottom: auto;
+    width: auto; height: 3px;
+    border-radius: 0 0 2px 2px;
+  }
+  .ink-indicator { display: none; }
+  #subtool-panel {
+    left: 50%; top: auto; bottom: 106px;
+    transform: translateX(-50%) translateY(0);
+  }
+  #page-nav { bottom: 6px; }
+  #explore-controls, #writing-controls { display: none; }
+  .chat-window {
+    width: 95vw; height: 70vh;
+    transform: none;
+  }
+  /* 移动端：返回按钮更大 touch 目标 */
+  #back-to-explore {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+}
+
+/* ============================================
+   移动端浮动互动按钮
+   ============================================ */
+#mobile-interact-btn {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 20;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--teal), #05668d);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(7,123,138,0.35);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+#mobile-interact-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+#mobile-interact-btn:active {
+  transform: translateX(-50%) scale(0.95);
+  box-shadow: 0 2px 8px rgba(7,123,138,0.4);
+}
+
+/* ============================================
+   移动端触摸优化
+   ============================================ */
+@media (pointer: coarse) {
+  /* 触屏设备禁用长按菜单 */
+  * {
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* zone overlay 关闭按钮更大 */
+  .zone-close-btn {
+    width: 44px; height: 44px;
+    font-size: 22px;
+  }
+
+  /* ── hover 降级：触屏上去掉 hover 特效，改为 :active ── */
+
+  /* 通用关闭按钮 */
+  .zone-modal .close-btn:hover { transform: none; background: inherit; color: inherit; }
+  .zone-modal .close-btn:active { background: var(--redline); color: #fff; transform: rotate(90deg); }
+
+  /* 通用按钮 */
+  .btn-primary:hover { filter: none; transform: none; }
+  .btn-primary:active { filter: brightness(1.1); transform: scale(0.96); }
+  .btn-secondary:hover { background: var(--birch); color: var(--graphite); transform: none; }
+  .btn-secondary:active { background: var(--kraft); color: var(--paper); transform: scale(0.96); }
+
+  /* 游戏交互区 hover → active */
+  .puzzle-cell:hover { background: inherit; transform: none; }
+  .puzzle-cell:active { background: #FFF9C4; transform: scale(1.05); }
+  .puzzle-cell.empty:hover { background: transparent; transform: none; }
+  .klotski-block:hover { filter: none; transform: none; }
+  .klotski-block:active { filter: brightness(1.15); transform: scale(1.02); }
+  .sudoku-cell:not(.given):hover { background: inherit; }
+  .sudoku-cell:not(.given):active { background: #D1C4E9; }
+  .magic-rune:hover { background: inherit; transform: none; }
+  .magic-rune:active { background: rgba(156,39,176,0.15); transform: scale(1.05); }
+  .star-click-target:hover { background: inherit; }
+  .star-click-target:active { background: rgba(255,215,0,0.2); }
+  .weather-btn:hover { background: inherit; }
+  .weather-btn:active { background: #E3F2FD; }
+
+  /* 书架书本 */
+  .shelf-book:hover { transform: none; }
+  .shelf-book:active { transform: translateY(-3px); }
+
+  /* 相册卡片 */
+  .album-card:hover { transform: none; }
+  .album-card:active { transform: scale(1.02); }
+  .album-lightbox-close:hover { color: inherit; }
+  .album-lightbox-close:active { color: var(--redline); }
+  .album-lightbox-nav:hover { background: inherit; }
+  .album-lightbox-nav:active { background: rgba(0,0,0,0.15); }
+
+  /* 邮局发送按钮 */
+  #mailbox-send:hover { transform: none; }
+  #mailbox-send:active { transform: rotate(-1deg) scale(1.04); }
+
+  /* 音乐控制按钮 */
+  .music-controls button:hover { background: inherit; color: inherit; }
+  .music-controls button:active { background: var(--teal); color: #fff; }
+
+  /* 咖啡菜单 */
+  .coffee-item:hover { background: inherit; }
+  .coffee-item:active { background: rgba(139,115,85,0.1); }
+
+  /* 烹饪 */
+  .cooking-ingredient:hover { transform: none; }
+  .cooking-ingredient:active { transform: scale(1.05); }
+  #cooking-cook:hover:not(:disabled) { transform: none; }
+  #cooking-cook:active:not(:disabled) { transform: scale(0.95); }
+
+  /* 折纸方向按钮 */
+  .origami-dir-btn:hover { transform: none; }
+  .origami-dir-btn:active { transform: scale(0.92); background: rgba(7,123,138,0.15); }
+
+  /* 时间胶囊按钮 */
+  .capsule-time-btn:hover { background: inherit; }
+  .capsule-time-btn:active { background: rgba(7,123,138,0.1); }
+
+  /* 翻页按钮 */
+  #page-prev:hover, #page-next:hover { background: inherit; }
+  #page-prev:active, #page-next:active { background: var(--teal); color: #fff; }
+
+  /* 返回探索按钮 */
+  #back-to-explore:hover { transform: none; }
+  #back-to-explore:active { transform: scale(0.96); }
+
+  /* 工具栏按钮 */
+  .tool-btn:hover { background: inherit; }
+  .tool-btn:active { background: rgba(7,123,138,0.15); }
+  .tool-btn.active:hover { background: inherit; }
+
+  /* 颜色面板 */
+  .color-swatch:hover { transform: none; }
+  .color-swatch:active { transform: scale(1.2); }
+  .size-btn:hover { background: inherit; }
+  .size-btn:active { background: var(--teal); color: #fff; }
+  .sticker-option:hover { transform: none; }
+  .sticker-option:active { transform: scale(1.1); }
+
+  /* 进度/成就 */
+  #badge-btn:hover { transform: none; }
+  #badge-btn:active { transform: scale(0.9); }
+  .badge-cell:hover { transform: none; }
+  .badge-cell:hover .badge-tip { display: none; }
+  .badge-cell:active .badge-tip { display: block; }
+
+  /* 搜索 */
+  .search-item:hover { background: inherit; }
+  .search-item:active { background: #E3F2FD; }
+
+  /* AI 设置按钮 */
+  .chat-settings-btn:hover { background: inherit; }
+  .chat-settings-btn:active { background: rgba(0,0,0,0.1); }
+  .chat-send-btn:hover { background: inherit; }
+  .chat-send-btn:active { background: var(--teal); }
+  #ai-fetch-models-btn:hover { background: inherit; }
+  #ai-fetch-models-btn:active { background: rgba(7,123,138,0.1); }
+  .chat-close-btn:hover { background: inherit; }
+  .chat-close-btn:active { background: rgba(0,0,0,0.1); }
+
+  /* 卡牌翻转 */
+  .card-cell:not(.flipped):hover { transform: none; }
+  .card-cell:not(.flipped):active { transform: scale(0.95); }
+
+  /* 许愿石池 */
+  .wish-input-btn:hover { background: inherit; }
+  .wish-input-btn:active { background: var(--teal); color: #fff; }
+}
+
+/* ============================================
+   安全区域适配（刘海屏 / 圆角屏）
+   ============================================ */
+@supports (padding: env(safe-area-inset-bottom)) {
+  #mobile-interact-btn {
+    bottom: calc(32px + env(safe-area-inset-bottom));
+  }
+  #toolbar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #page-nav {
+    bottom: calc(6px + env(safe-area-inset-bottom));
+  }
+  #progress-hud {
+    top: calc(12px + env(safe-area-inset-top));
+    right: calc(12px + env(safe-area-inset-right));
+  }
+}
+
+/* ============================================
+   减少动画
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

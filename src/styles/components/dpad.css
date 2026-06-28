@@ -1,0 +1,100 @@
+/* dpad.css — 🎮 虚拟方向键通用样式 */
+/* 仅在触屏设备上显示 */
+
+.dpad {
+  display: none; /* 默认隐藏 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 触屏设备上才显示 D-Pad */
+@media (pointer: coarse) {
+  .dpad {
+    display: grid;
+    grid-template-areas:
+      ".    up   ."
+      "left down right";
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+    justify-items: center;
+    align-items: center;
+    margin: 12px auto 4px;
+    width: fit-content;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .dpad-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid rgba(139, 115, 85, 0.4);
+    background: rgba(250, 245, 232, 0.9);
+    color: var(--graphite, #2C2C3A);
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 1px 2px 4px rgba(139, 115, 85, 0.2);
+    transition: transform 0.08s, background 0.08s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .dpad-btn:active {
+    background: var(--teal, #077B8A);
+    color: #fff;
+    transform: scale(0.9);
+    box-shadow: none;
+  }
+
+  .dpad-btn[data-dir="up"]    { grid-area: up; }
+  .dpad-btn[data-dir="left"]  { grid-area: left; }
+  .dpad-btn[data-dir="down"]  { grid-area: down; }
+  .dpad-btn[data-dir="right"] { grid-area: right; }
+}
+
+/* ── 节奏游戏专用：横排4键 ────────────── */
+.rhythm-dpad {
+  display: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (pointer: coarse) {
+  .rhythm-dpad {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 10px auto 4px;
+    width: 100%;
+    max-width: 280px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .rhythm-btn {
+    flex: 1;
+    height: 60px;
+    border-radius: 10px;
+    border: 2px solid rgba(139, 115, 85, 0.35);
+    background: rgba(250, 245, 232, 0.9);
+    color: var(--graphite, #2C2C3A);
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 1px 2px 4px rgba(139, 115, 85, 0.2);
+    transition: transform 0.06s, background 0.06s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .rhythm-btn:active {
+    background: var(--teal, #077B8A);
+    color: #fff;
+    transform: scale(0.92);
+    box-shadow: none;
+  }
+}

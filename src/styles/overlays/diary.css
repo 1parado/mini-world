@@ -1,0 +1,54 @@
+/* ============================================
+   📔 日记本 — 拟物：皮革日记簿
+   ============================================ */
+#diary-modal {
+  background:
+    linear-gradient(180deg, #795548 0%, #6D4C41 40%, #5D4037 100%);
+  border-color: #4E342E;
+  border-radius: 4px 16px 4px 16px;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    4px 4px 0 rgba(30,15,5,0.4),
+    0 12px 40px rgba(0,0,0,0.25),
+    0 0 0 3px #8D6E63,
+    0 0 0 4px #D4AF37;
+}
+#diary-modal::after {
+  background: linear-gradient(225deg, #8D6E63 50%, transparent 50%);
+}
+#diary-modal h2 {
+  color: #FFCC80;
+  border-bottom-color: rgba(255,204,128,0.12);
+}
+#diary-modal .close-btn {
+  border-color: #8D6E63;
+  color: #FFCC80;
+  background: #5D4037;
+}
+#diary-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+.diary-mood-btn {
+  background: rgba(255,255,255,0.08) !important;
+  color: #FFCC80 !important;
+  border-color: rgba(255,204,128,0.2) !important;
+}
+.diary-mood-btn.selected {
+  background: #D4AF37 !important;
+  color: #3E2723 !important;
+  border-color: #D4AF37 !important;
+}
+.diary-textarea {
+  background: rgba(255,248,225,0.1) !important;
+  color: #FFCC80 !important;
+  border-color: rgba(255,204,128,0.15) !important;
+}
+.diary-entry {
+  border-bottom-color: rgba(255,204,128,0.08) !important;
+}
+.diary-entry-text {
+  color: #D7CCC8 !important;
+}

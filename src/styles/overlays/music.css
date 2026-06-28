@@ -1,0 +1,144 @@
+/* ============================================
+   🎵 音乐盒 — 拟物：黑胶唱片 + 木盒
+   ============================================ */
+
+/* 音乐盒覆写：深色木盒 */
+#music-modal {
+  background:
+    linear-gradient(180deg,
+      #3E2723 0%, #4E342E 8%, #5D4037 92%, #3E2723 100%);
+  border-color: #8D6E63;
+  border-radius: 4px 20px 4px 20px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    4px 4px 0 rgba(30,20,10,0.4),
+    0 12px 40px rgba(0,0,0,0.3);
+}
+#music-modal::after {
+  background: linear-gradient(225deg, #5D4037 50%, transparent 50%);
+}
+#music-modal h2 {
+  color: #FFCC80;
+  border-bottom-color: rgba(255,204,128,0.15);
+}
+#music-modal .close-btn {
+  border-color: #8D6E63;
+  color: #FFCC80;
+  background: #4E342E;
+}
+#music-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+
+.music-box-display {
+  text-align: center;
+  margin: 12px 0;
+}
+
+/* 黑胶唱片 */
+.music-vinyl {
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  background:
+    radial-gradient(circle,
+      #4E342E 14%, transparent 14.5%,
+      transparent 15%, #1a1a1a 15.5%,
+      #1a1a1a 16%, transparent 16.5%,
+      transparent 42%, rgba(26,26,26,0.2) 42.5%,
+      #1a1a1a 43%, transparent 43.5%,
+      transparent 68%, rgba(26,26,26,0.15) 68.5%,
+      #1a1a1a 69%, transparent 69.5%
+    ),
+    conic-gradient(from 0deg,
+      #111 0deg, #222 10deg, #111 20deg, #1a1a1a 30deg,
+      #222 40deg, #111 50deg, #1a1a1a 60deg, #222 70deg,
+      #111 80deg, #1a1a1a 90deg, #222 100deg, #111 110deg,
+      #1a1a1a 120deg, #222 130deg, #111 140deg, #1a1a1a 150deg,
+      #222 160deg, #111 170deg, #1a1a1a 180deg, #222 190deg,
+      #111 200deg, #1a1a1a 210deg, #222 220deg, #111 230deg,
+      #1a1a1a 240deg, #222 250deg, #111 260deg, #1a1a1a 270deg,
+      #222 280deg, #111 290deg, #1a1a1a 300deg, #222 310deg,
+      #111 320deg, #1a1a1a 330deg, #222 340deg, #111 360deg
+    );
+  background-color: #111;
+  border: 3px solid #333;
+  box-shadow:
+    0 0 0 4px #4E342E,
+    0 4px 16px rgba(0,0,0,0.4);
+  position: relative;
+  transition: transform 0.3s;
+}
+.music-vinyl.playing {
+  animation: vinylSpin 2s linear infinite;
+}
+@keyframes vinylSpin {
+  to { transform: rotate(360deg); }
+}
+/* 唱片中心标签 */
+.music-vinyl::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FF5722 30%, #E64A19 70%, #BF360C 100%);
+  border: 2px solid #333;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+}
+
+.music-melody-name {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 700;
+  color: #FFCC80;
+  margin-bottom: 8px;
+}
+.music-status {
+  font-size: 14px; color: rgba(255,204,128,0.6);
+  margin: 8px 0;
+}
+.music-controls {
+  display: flex; gap: 8px; justify-content: center;
+  flex-wrap: wrap;
+}
+.music-controls button {
+  border: 1.5px solid rgba(255,204,128,0.2);
+  border-radius: 4px 8px 4px 8px;
+  padding: 8px 18px;
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  background: rgba(255,255,255,0.06);
+  color: #FFCC80;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.music-controls button:hover {
+  background: rgba(255,204,128,0.1);
+  transform: scale(1.05);
+}
+.music-controls .btn-primary {
+  background: #FF5722;
+  color: #FFF;
+  border-color: #E64A19;
+  box-shadow: 0 3px 6px rgba(255,87,34,0.3);
+}
+
+.music-note-particles {
+  position: relative;
+  height: 40px;
+  margin: 8px 0;
+}
+.music-note-particles .note {
+  position: absolute;
+  font-size: 18px;
+  animation: floatNote 2s ease-out infinite;
+  opacity: 0;
+}
+@keyframes floatNote {
+  0% { opacity: 0.8; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-30px) scale(0.6); }
+}

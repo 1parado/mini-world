@@ -1,0 +1,46 @@
+/* ============================================
+   🪙 许愿池 — 拟物：石池水面
+   ============================================ */
+#wish-modal {
+  background:
+    linear-gradient(180deg, #263238 0%, #1A237E 30%, #0D47A1 60%, #263238 100%);
+  border-color: #0D1B2A;
+  border-radius: 4px 20px 4px 20px;
+  box-shadow:
+    inset 0 0 40px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    4px 4px 0 rgba(5,10,20,0.5),
+    0 12px 40px rgba(0,0,0,0.35),
+    0 0 8px rgba(79,195,247,0.06);
+}
+#wish-modal::after {
+  background: linear-gradient(225deg, #1A237E 50%, transparent 50%);
+}
+#wish-modal h2 {
+  color: #4FC3F7;
+  border-bottom-color: rgba(79,195,247,0.08);
+  text-shadow: 0 0 6px rgba(79,195,247,0.15);
+}
+#wish-modal .close-btn {
+  border-color: #1A237E;
+  color: #4FC3F7;
+  background: #0D1B2A;
+}
+#wish-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+.wish-pond {
+  background: radial-gradient(circle, rgba(100,181,246,0.25), rgba(13,71,161,0.15)) !important;
+  box-shadow: inset 0 4px 12px rgba(0,0,0,0.4), 0 0 12px rgba(79,195,247,0.1) !important;
+}
+#wish-input {
+  background: rgba(255,255,255,0.06) !important;
+  color: #B3E5FC !important;
+  border-color: rgba(79,195,247,0.2) !important;
+}
+.wish-item {
+  color: #80DEEA !important;
+  border-bottom-color: rgba(79,195,247,0.06) !important;
+}

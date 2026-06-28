@@ -1,0 +1,33 @@
+/* ============================================
+   🪄 墨水台 — 拟物：玻璃墨水瓶
+   ============================================ */
+#inkwell-modal {
+  background:
+    linear-gradient(180deg, #1A237E 0%, #283593 20%, #1A237E 50%, #0D1B60 100%);
+  border-color: #0D1040;
+  border-radius: 4px 50% 4px 50%;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    4px 4px 0 rgba(5,5,40,0.5),
+    0 12px 40px rgba(0,0,0,0.3),
+    0 0 8px rgba(63,81,181,0.1),
+    0 0 0 3px #D4AF37;
+}
+#inkwell-modal::after {
+  background: linear-gradient(225deg, #283593 50%, transparent 50%);
+}
+#inkwell-modal h2 {
+  color: #7986CB;
+  border-bottom-color: rgba(121,134,203,0.1);
+}
+#inkwell-modal .close-btn {
+  border-color: #3F51B5;
+  color: #9FA8DA;
+  background: #1A237E;
+}
+#inkwell-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}

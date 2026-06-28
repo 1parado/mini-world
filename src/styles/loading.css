@@ -1,0 +1,143 @@
+/* ============================================
+   加载屏幕 — 手绘铅笔开场
+   ============================================ */
+#loading {
+  position: fixed; inset: 0;
+  z-index: 100;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: var(--paper);
+  transition: opacity 0.8s;
+  overflow: hidden;
+}
+#loading::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 37px, rgba(44,44,58,0.025) 37px, rgba(44,44,58,0.025) 38px),
+    repeating-linear-gradient(90deg, transparent, transparent 200px, rgba(234,84,85,0.02) 200px, rgba(234,84,85,0.02) 201px);
+  pointer-events: none;
+}
+#loading h1 {
+  font-family: var(--font-display);
+  font-size: 48px; font-weight: 700;
+  color: var(--graphite);
+  margin-bottom: 8px;
+  position: relative;
+  text-shadow: 2px 2px 0 rgba(139,115,85,0.08);
+}
+/* 铅笔图标动画 */
+.loading-pencil {
+  font-size: 32px;
+  margin-bottom: 16px;
+  animation: pencilWrite 1.8s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes pencilWrite {
+  0%, 100% { transform: rotate(-5deg) translateX(-4px); }
+  25% { transform: rotate(3deg) translateX(4px); }
+  50% { transform: rotate(-2deg) translateX(2px); }
+  75% { transform: rotate(4deg) translateX(-2px); }
+}
+.bar {
+  width: 220px; height: 5px;
+  background: rgba(44,44,58,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: 1px solid rgba(44,44,58,0.05);
+}
+.bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--redline));
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+.status {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 600;
+  color: var(--text-secondary);
+}
+/* 角落手绘装饰 */
+.loading-doodle {
+  position: absolute;
+  font-size: 28px;
+  opacity: 0.15;
+  animation: doodleFloat 4s ease-in-out infinite;
+}
+.loading-doodle:nth-child(2) { top: 8%; left: 8%; animation-delay: 0s; }
+.loading-doodle:nth-child(3) { top: 12%; right: 12%; animation-delay: 0.8s; }
+.loading-doodle:nth-child(4) { bottom: 15%; left: 10%; animation-delay: 1.5s; }
+.loading-doodle:nth-child(5) { bottom: 10%; right: 8%; animation-delay: 2.2s; }
+.loading-doodle:nth-child(6) { top: 40%; left: 4%; animation-delay: 0.5s; }
+.loading-doodle:nth-child(7) { top: 55%; right: 5%; animation-delay: 1.8s; }
+@keyframes doodleFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(5deg); }
+}
+
+/* ============================================
+   角色定制屏幕
+   ============================================ */
+#character-creator {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--paper);
+  background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(26,26,46,0.035) 27px, rgba(26,26,46,0.035) 28px),
+                    repeating-linear-gradient(90deg, transparent, transparent 27px, rgba(26,26,46,0.015) 27px, rgba(26,26,46,0.015) 28px);
+  display: flex; align-items: center; justify-content: center;
+}
+.cc-paper {
+  background: #fff; border-radius: 16px; padding: 28px;
+  max-width: 640px; width: 92vw; max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 4px 24px rgba(26,26,46,0.12);
+  border: 2px solid rgba(26,26,46,0.08);
+}
+.cc-paper h2 {
+  font-family: var(--font-display); font-size: 22px; margin: 0 0 20px 0;
+  text-align: center; color: var(--ink);
+}
+.cc-body { display: flex; gap: 24px; margin-bottom: 20px; }
+@media (max-width: 560px) { .cc-body { flex-direction: column; align-items: center; } }
+.cc-preview {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+}
+#cc-canvas {
+  border: 2px dashed rgba(26,26,46,0.12); border-radius: 8px;
+  background: rgba(250,245,232,0.5);
+}
+.cc-preview-hint {
+  font-family: var(--font-display); font-size: 11px; color: var(--text-ghost);
+  margin-top: 4px;
+}
+.cc-options { flex: 1; min-width: 0; }
+.cc-section { margin-bottom: 14px; }
+.cc-label {
+  font-family: var(--font-display); font-size: 14px; font-weight: 700;
+  color: var(--ink); margin-bottom: 6px;
+}
+.cc-radio-group {
+  display: flex; flex-wrap: wrap; gap: 6px 14px;
+  font-family: var(--font-display); font-size: 13px; color: var(--text-ghost);
+}
+.cc-radio-group label { cursor: pointer; display: flex; align-items: center; gap: 3px; }
+.cc-radio-group input[type="radio"] { accent-color: var(--teal); }
+.cc-colors { display: flex; flex-direction: column; gap: 6px; }
+.cc-color-row {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-display); font-size: 13px; color: var(--text-ghost);
+}
+.cc-color-row span { width: 40px; text-align: right; }
+.cc-color-row input[type="color"] {
+  width: 32px; height: 24px; border: 1px solid rgba(26,26,46,0.12);
+  border-radius: 4px; cursor: pointer; padding: 0;
+}
+.cc-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px dashed rgba(26,26,46,0.12); padding-top: 16px;
+}
+.cc-skip-label {
+  font-family: var(--font-display); font-size: 12px; color: var(--text-ghost);
+  cursor: pointer; display: flex; align-items: center; gap: 4px;
+}
+.cc-skip-label input { accent-color: var(--teal); }

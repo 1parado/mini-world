@@ -1,0 +1,31 @@
+/* ============================================
+   🏷️ 贴纸册 — 拟物：糖果贴纸册
+   ============================================ */
+#sticker-modal {
+  background:
+    linear-gradient(165deg, #FFF3E0 0%, #FFE0B2 40%, #FFCC80 100%);
+  border-color: #FF9800;
+  border-radius: 4px 16px 4px 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    4px 4px 0 rgba(255,152,0,0.15),
+    0 12px 40px rgba(0,0,0,0.1),
+    0 0 0 3px #FFB74D;
+}
+#sticker-modal::after {
+  background: linear-gradient(225deg, #FFE0B2 50%, transparent 50%);
+}
+#sticker-modal h2 {
+  color: #E65100;
+  border-bottom-color: rgba(230,81,0,0.1);
+}
+#sticker-modal .close-btn {
+  border-color: #FFB74D;
+  color: #E65100;
+  background: #FFF3E0;
+}
+#sticker-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}

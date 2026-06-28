@@ -1,0 +1,123 @@
+/* ============================================
+   🎯 飞镖靶 — 拟物：还原酒吧飞镖靶
+   ============================================ */
+
+/* 飞镖靶整体覆写：软木底座包装 */
+#dart-modal {
+  background:
+    linear-gradient(135deg, #c4a366 0%, #b8956a 50%, #a88650 100%);
+  border-color: #8B6914;
+  border-radius: 4px 18px 4px 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    4px 4px 0 rgba(100,70,30,0.25),
+    0 12px 40px rgba(0,0,0,0.2);
+}
+#dart-modal::after {
+  /* 保留折角，改色为软木 */
+  background: linear-gradient(225deg, #d4b87a 50%, transparent 50%);
+}
+#dart-modal h2 {
+  color: #3E2723;
+  border-bottom-color: rgba(139,105,20,0.2);
+}
+
+/* 靶盘 — 多环同心圆 + 内阴影模拟凹陷 */
+.dart-board-display {
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle,
+      #2C2C3A 6%, #37474F 8%,
+      #EA5455 14%, #c0392b 18%,
+      #E8E0D0 24%, #d4c4a8 30%,
+      #2C2C3A 36%, #37474F 42%,
+      #E8E0D0 48%, #d4c4a8 56%,
+      #2C2C3A 62%, #37474F 70%,
+      #E8E0D0 76%, #d4c4a8 86%,
+      #8B6914 92%, #6D4C00 100%
+    );
+  border: 4px solid #6D4C00;
+  margin: 0 auto 16px;
+  position: relative;
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,0.35),
+    0 4px 12px rgba(0,0,0,0.2),
+    0 0 0 3px #5D4037;
+  cursor: crosshair;
+  transition: transform 0.15s;
+}
+.dart-board-display:active { transform: scale(0.97); }
+.dart-board-display::after {
+  content: '⊕';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(234,84,85,0.6);
+  font-size: 28px; font-weight: 300;
+  text-shadow: 0 0 6px rgba(234,84,85,0.3);
+}
+
+/* 飞镖扎入指示线（per dart result 添加） */
+.dart-board-display .dart-pin {
+  position: absolute;
+  width: 3px; height: 20px;
+  background: linear-gradient(to bottom, #B0BEC5, #78909C);
+  border-radius: 1px;
+  transform-origin: bottom center;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.dart-stats {
+  display: flex; gap: 16px; justify-content: center; margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.dart-stat {
+  text-align: center; min-width: 60px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+.dart-stat .val {
+  font-family: var(--font-display);
+  font-size: 32px; font-weight: 700;
+  color: #FFF;
+  display: block;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+}
+.dart-stat .label {
+  font-size: 11px; color: rgba(255,255,255,0.6);
+  font-weight: 600;
+}
+.dart-result {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 700;
+  color: #FFF;
+  margin: 8px 0;
+  min-height: 36px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+}
+.dart-log {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+  margin: 8px 0; min-height: 24px;
+}
+.dart-log-item {
+  font-size: 12px; font-weight: 600;
+  background: rgba(255,255,255,0.12);
+  border-radius: 4px; padding: 2px 8px;
+  color: #FFF;
+}
+.dart-actions {
+  display: flex; gap: 8px; justify-content: center;
+}
+.dart-actions button {
+  border: 1.5px solid rgba(0,0,0,0.2);
+  border-radius: 4px 10px 4px 10px;
+  padding: 10px 24px;
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+.dart-actions .btn-primary:active { transform: translateY(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.15); }

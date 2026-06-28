@@ -1,0 +1,132 @@
+/* ============================================
+   🃏 卡牌翻翻乐 — 拟物：紫色丝绒牌桌
+   ============================================ */
+
+/* 卡牌桌覆写：丝绒桌面 */
+#card-modal {
+  background:
+    linear-gradient(165deg, #4A148C 0%, #6A1B9A 40%, #4A148C 100%);
+  border-color: #38006b;
+  border-radius: 4px 14px 4px 14px;
+  box-shadow:
+    inset 0 0 50px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    4px 4px 0 rgba(20,0,40,0.5),
+    0 12px 40px rgba(0,0,0,0.3),
+    0 0 0 3px #8D6E63,
+    0 0 0 5px #5D4037;
+}
+#card-modal::after {
+  background: linear-gradient(225deg, #6A1B9A 50%, transparent 50%);
+}
+#card-modal h2 {
+  color: #E1BEE7;
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+#card-modal .close-btn {
+  border-color: #7B1FA2;
+  color: #CE93D8;
+  background: #4A148C;
+}
+#card-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 12px 0;
+}
+
+/* 拟物扑克牌 */
+.card-cell {
+  aspect-ratio: 3/4;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+  user-select: none;
+  position: relative;
+}
+
+/* 牌背：深紫 + 金边 */
+.card-cell:not(.flipped) {
+  background:
+    linear-gradient(135deg, #311B92 0%, #4A148C 50%, #311B92 100%);
+  color: rgba(255,215,0,0.2);
+  border: 2px solid #CE93D8;
+  box-shadow:
+    3px 3px 6px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.card-cell:not(.flipped):hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow:
+    0 8px 16px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+/* 牌背菱形花纹 */
+.card-cell:not(.flipped)::after {
+  content: '♦';
+  position: absolute;
+  font-size: 40px;
+  color: rgba(255,215,0,0.08);
+}
+
+/* 翻开牌面：象牙白 + 微黄 */
+.card-cell.flipped {
+  background: linear-gradient(145deg, #FFFFF5 0%, #FAF0E6 60%, #F5E6D0 100%);
+  color: var(--graphite);
+  border: 2px solid #D4AF37;
+  box-shadow:
+    3px 3px 6px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+  animation: cardFlip 0.3s ease-out;
+}
+@keyframes cardFlip {
+  0% { transform: rotateY(90deg) scale(0.8); }
+  100% { transform: rotateY(0deg) scale(1); }
+}
+
+/* 配对成功 */
+.card-cell.matched {
+  background: linear-gradient(145deg, #E8F5E9 0%, #C8E6C9 100%);
+  color: #2E7D32;
+  border-color: #66BB6A;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.card-stats {
+  display: flex; gap: 16px; justify-content: center;
+  font-size: 14px; color: rgba(255,255,255,0.6); font-weight: 500;
+  margin-bottom: 8px;
+}
+.card-stats strong { color: #FFF; }
+.card-win {
+  display: none;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 24px; font-weight: 700;
+  color: #FFD700;
+  padding: 14px;
+  background: rgba(255,215,0,0.1);
+  border-radius: 8px;
+  margin-top: 8px;
+  text-shadow: 0 0 12px rgba(255,215,0,0.3);
+}
+
+/* 重新开始按钮适配深色 */
+#card-modal .btn-secondary {
+  background: rgba(255,255,255,0.1);
+  color: #E1BEE7;
+  border-color: rgba(206,147,216,0.3);
+}
+#card-modal .btn-secondary:hover {
+  background: rgba(255,255,255,0.15);
+}

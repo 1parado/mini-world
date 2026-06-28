@@ -1,0 +1,38 @@
+/* ============================================
+   🦢 折纸桌 — 拟物：和纸折扇
+   ============================================ */
+#origami-modal {
+  background:
+    linear-gradient(180deg, #FCE4EC 0%, #F8BBD0 10%, #F48FB1 50%, #F8BBD0 90%, #FCE4EC 100%);
+  border-color: #E91E63;
+  border-radius: 4px 50% 4px 50%;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    4px 4px 0 rgba(233,30,99,0.15),
+    0 12px 40px rgba(0,0,0,0.1),
+    0 0 0 2px #F8BBD0;
+}
+#origami-modal::after {
+  background: linear-gradient(225deg, #F8BBD0 50%, transparent 50%);
+}
+#origami-modal h2 {
+  color: #880E4F;
+  border-bottom-color: rgba(233,30,99,0.1);
+}
+#origami-modal .close-btn {
+  border-color: #F48FB1;
+  color: #880E4F;
+  background: #FCE4EC;
+}
+#origami-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+.origami-dir-btn {
+  background: rgba(255,255,255,0.6) !important;
+  border-color: rgba(233,30,99,0.15) !important;
+}
+.origami-dir-btn:hover {
+  background: rgba(244,143,177,0.3) !important;
+}

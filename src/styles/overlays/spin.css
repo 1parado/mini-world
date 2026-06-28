@@ -1,0 +1,58 @@
+/* ============================================
+   🎰 幸运转盘
+   ============================================ */
+.spin-wheel-container {
+  position: relative;
+  width: 220px; height: 220px;
+  margin: 0 auto 16px;
+}
+.spin-wheel-ring {
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #FFD54F 0deg, #EA5455 45deg,
+    #26A69A 90deg, #7E57C2 135deg,
+    #F4A460 180deg, #077B8A 225deg,
+    #FF8A80 270deg, #3D5A80 315deg,
+    #FFD54F 360deg
+  );
+  border: 4px solid var(--kraft);
+  position: relative;
+  transform: rotate(0deg);
+  transition: none;
+}
+.spin-wheel-ring::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2px solid var(--kraft);
+}
+.spin-pointer {
+  position: absolute;
+  top: -14px; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 18px solid var(--redline);
+  z-index: 2;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+.spin-result {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 24px; font-weight: 700;
+  margin: 12px 0;
+  min-height: 36px;
+}
+.spin-actions {
+  display: flex; gap: 8px; justify-content: center;
+}
+.spin-info {
+  text-align: center;
+  font-size: 12px; color: var(--text-ghost);
+}

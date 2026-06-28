@@ -1,0 +1,166 @@
+/* ============================================
+   🍳 烹饪桌 — 拟物：木砧板 + 编织垫
+   ============================================ */
+
+/* 烹饪桌覆写：温暖木砧板 */
+#cooking-modal {
+  background:
+    linear-gradient(165deg,
+      #8D6E63 0%, #A1887F 12%, #BCAAA4 30%,
+      #A1887F 50%, #8D6E63 70%, #795548 88%, #6D4C41 100%);
+  border-color: #5D4037;
+  border-radius: 6px 18px 6px 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.1),
+    4px 4px 0 rgba(60,30,10,0.35),
+    0 12px 40px rgba(0,0,0,0.2),
+    /* 木框边沿 */
+    0 0 0 3px #6D4C41,
+    0 0 0 5px #5D4037;
+}
+#cooking-modal::after {
+  background: linear-gradient(225deg, #A1887F 50%, transparent 50%);
+}
+#cooking-modal h2 {
+  color: #FFF3E0;
+  border-bottom-color: rgba(255,243,224,0.12);
+}
+#cooking-modal .close-btn {
+  border-color: #6D4C41;
+  color: #D7CCC8;
+  background: #5D4037;
+}
+#cooking-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+
+/* 食材按钮 — 编织布片/标签 */
+.cooking-ingredients {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0;
+}
+.cooking-ingredient {
+  padding: 8px 12px;
+  border-radius: 4px 8px 4px 8px;
+  border: 1.5px solid rgba(93,64,55,0.4);
+  background:
+    linear-gradient(145deg, #EFEBE9 0%, #D7CCC8 100%);
+  cursor: pointer;
+  font-size: 14px;
+  color: #4E342E;
+  font-weight: 600;
+  box-shadow:
+    1px 1px 3px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+  transition: all 0.15s;
+}
+.cooking-ingredient:hover {
+  transform: translateY(-2px) rotate(-0.5deg);
+  box-shadow:
+    2px 3px 6px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.cooking-ingredient:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 2px rgba(0,0,0,0.15);
+}
+/* 选中食材 — 焦糖高亮 */
+.cooking-ingredient.selected {
+  background:
+    linear-gradient(145deg, #FBE9E7 0%, #FFCCBC 100%);
+  border-color: #E64A19;
+  color: #BF360C;
+  box-shadow:
+    0 0 0 2px rgba(230,74,25,0.15),
+    2px 2px 4px rgba(230,74,25,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* 已选食材文字 */
+.cooking-selected {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: rgba(255,243,224,0.8);
+  margin: 8px 0;
+  text-align: center;
+  min-height: 24px;
+}
+
+/* 烹饪按钮 — 铁锅造型 */
+#cooking-cook {
+  border: 1.5px solid rgba(180,80,20,0.4) !important;
+  border-radius: 4px 10px 4px 10px !important;
+  padding: 10px 28px !important;
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  cursor: pointer;
+  background:
+    linear-gradient(180deg, #E64A19 0%, #BF360C 100%) !important;
+  color: #FFF !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  box-shadow:
+    0 3px 8px rgba(191,54,12,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.15) !important;
+  transition: transform 0.15s, box-shadow 0.15s !important;
+}
+#cooking-cook:hover:not(:disabled) {
+  transform: rotate(-1deg) scale(1.04);
+  box-shadow:
+    0 5px 12px rgba(191,54,12,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.15) !important;
+}
+#cooking-cook:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 2px rgba(191,54,12,0.3),
+    inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+#cooking-cook:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 烹饪结果 */
+#cooking-result {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: #FFCC80;
+  min-height: 28px;
+  margin: 10px 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* 菜谱图鉴标签 — 木质挂牌 */
+.cooking-recipes {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+}
+.cooking-recipe-tag {
+  padding: 5px 10px;
+  border-radius: 3px 6px 3px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background:
+    linear-gradient(145deg, #EFEBE9 0%, #D7CCC8 100%);
+  border: 1px solid rgba(93,64,55,0.25);
+  color: #4E342E;
+  box-shadow:
+    1px 1px 2px rgba(0,0,0,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.cooking-recipe-tag.locked {
+  background: rgba(62,39,25,0.4);
+  color: rgba(255,243,224,0.3);
+  border-color: rgba(93,64,55,0.2);
+  box-shadow: none;
+}
+
+/* 图鉴标题 */
+#cooking-modal > div[style*="菜谱图鉴"] {
+  color: rgba(255,243,224,0.5) !important;
+}

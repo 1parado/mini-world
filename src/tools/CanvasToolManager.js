@@ -13,6 +13,7 @@ export class CanvasToolManager {
     this.pageRect = pageRect; // { left, top, width, height } — screen rect where left page is drawn
     this.onColorCycle = null;
     this._bound = false;
+    this._touchBound = false;
   }
 
   registerTool(name, tool) {
@@ -58,6 +59,11 @@ export class CanvasToolManager {
     const pageY = (relY / pr.height) * PAGE_H;
 
     return { side, x: pageX, y: pageY };
+  }
+
+  // Convert a Touch object to { clientX, clientY } for hitTestPage
+  _touchToMouse(touch) {
+    return { clientX: touch.clientX, clientY: touch.clientY };
   }
 
   bindEvents(canvas) {
@@ -125,6 +131,50 @@ export class CanvasToolManager {
       if (e.code === 'KeyC') {
         if (this.onColorCycle) this.onColorCycle();
       }
+    });
+  }
+
+  // 移动端触摸事件绑定（writing 模式下用手指绘画）
+  bindTouchEvents(canvas) {
+    if (this._touchBound) return;
+    this._touchBound = true;
+
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (!touch) return;
+      const fakeE = this._touchToMouse(touch);
+      const hit = this.hitTestPage(fakeE, 'left');
+      if (!hit) return;
+      this.isMouseDown = true;
+      this.lastHit = hit;
+      this.getActiveTool().onPointerDown(hit);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      if (!touch) return;
+      const fakeE = this._touchToMouse(touch);
+      const hit = this.hitTestPage(fakeE, 'left');
+      if (this.getActiveTool()) {
+        this.getActiveTool().onPointerMove(hit, this.isMouseDown);
+      }
+      if (this.isMouseDown && hit) {
+        this.lastHit = hit;
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      this.isMouseDown = false;
+      if (this.lastHit) {
+        this.getActiveTool().onPointerUp(this.lastHit);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchcancel', (e) => {
+      this.isMouseDown = false;
     });
   }
 }

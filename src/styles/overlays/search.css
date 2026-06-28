@@ -1,0 +1,22 @@
+/* ============================================
+   🔍 搜索 — 拟物：放大镜圆框
+   ============================================ */
+#search-modal {
+  background:
+    linear-gradient(180deg, #546E7A 0%, #455A64 40%, #37474F 100%);
+  border-color: #263238;
+  border-radius: 4px 16px 4px 16px;
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    4px 4px 0 rgba(10,20,25,0.5),
+    0 12px 40px rgba(0,0,0,0.3),
+    0 0 0 3px #607D8B;
+}
+#search-modal::after {
+  background: linear-gradient(225deg, #607D8B 50%, transparent 50%);
+}
+#search-modal h2 {
+  color: #B0BEC5;
+  border-bottom-color: rgba(255,255,255,0.06);
+}

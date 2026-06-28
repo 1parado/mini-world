@@ -1,0 +1,248 @@
+/* ============================================
+   书写模式包裹 — 显示工具栏+页码导航
+   ============================================ */
+.writing-mode {
+  display: none;
+}
+.writing-mode.visible {
+  display: flex;
+}
+
+/* ============================================
+   顶部信息条 — 细线边框
+   ============================================ */
+#tool-info {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: none; align-items: center; gap: 12px;
+  padding: 8px 20px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  backdrop-filter: blur(8px);
+}
+#tool-info.visible { display: flex; }
+#current-tool-name {
+  font-weight: 600;
+  color: var(--graphite);
+}
+.ink-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--graphite);
+  border: 1.5px solid var(--paper);
+  box-shadow: 0 0 0 1.5px var(--kraft);
+}
+#tool-info .separator {
+  color: var(--text-ghost);
+  font-size: 10px;
+}
+
+/* ============================================
+   工具栏 — "铅笔盒" (牛皮纸色) 手绘风格
+   ============================================ */
+#toolbar {
+  position: fixed; left: 14px; top: 50%;
+  transform: translateY(-50%) rotate(-0.3deg);
+  z-index: 10;
+  background: var(--kraft);
+  border-radius: 3px 12px 3px 12px;
+  padding: 10px 6px 10px 4px;
+  display: none; flex-direction: column; gap: 2px;
+  box-shadow:
+    3px 3px 0 rgba(44,44,58,0.1),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+#toolbar.visible { display: flex; }
+.toolbar-buttons {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.tool-btn {
+  width: 52px; height: 52px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: 20px;
+  transition: background 0.15s, transform 0.15s;
+  position: relative;
+  color: color-mix(in srgb, var(--paper) var(--a-strong), transparent);
+}
+.tool-btn:hover {
+  background: rgba(255,255,255,0.08);
+  transform: scale(1.08) rotate(-2deg);
+}
+.tool-btn.active {
+  background: rgba(255,255,255,0.15);
+}
+/* 红色页边线 — 活跃指示器 */
+.tool-btn.active::before {
+  content: '';
+  position: absolute;
+  left: -4px; top: 8px; bottom: 8px;
+  width: 3px;
+  background: var(--redline);
+  border-radius: 2px;
+}
+.tool-icon {
+  line-height: 1;
+  font-size: 20px;
+}
+.tool-label {
+  font-size: 9px;
+  font-family: var(--font-ui);
+  opacity: 0.35;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.ink-indicator {
+  position: absolute;
+  bottom: 6px; right: 6px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.toolbar-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 4px 6px;
+}
+
+/* ============================================
+   子工具面板
+   ============================================ */
+#subtool-panel {
+  position: fixed;
+  left: 76px; top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: var(--paper);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px;
+  display: none;
+  box-shadow: 2px 3px 12px rgba(0,0,0,0.08);
+  min-width: 100px;
+}
+#subtool-panel.visible { display: block; }
+.subtool-label {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.color-swatches {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+.color-swatch {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.1s, transform 0.1s;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.active-swatch { border-color: var(--graphite) !important; transform: scale(1.15); }
+
+.size-options {
+  display: flex; gap: 4px;
+}
+.size-btn {
+  width: 34px; height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--paper);
+  cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  color: var(--graphite);
+  transition: background 0.1s;
+}
+.size-btn:hover { background: color-mix(in srgb, var(--birch) 50%, transparent); }
+.active-size {
+  background: var(--kraft) !important;
+  color: var(--paper) !important;
+}
+
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.sticker-option {
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--paper);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s, transform 0.1s;
+}
+.sticker-option:hover { background: color-mix(in srgb, var(--birch) 50%, transparent); transform: scale(1.1); }
+.active-sticker {
+  border-color: var(--kraft) !important;
+  background: color-mix(in srgb, var(--kraft) 15%, transparent) !important;
+}
+
+/* ============================================
+   页码导航
+   ============================================ */
+#page-nav {
+  position: fixed; bottom: 20px;
+  left: 50%; transform: translateX(-50%);
+  z-index: 10;
+  display: none; align-items: center; gap: 12px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 6px 16px;
+  backdrop-filter: blur(8px);
+}
+#page-nav.visible { display: flex; }
+#page-prev, #page-next {
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--paper);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--graphite);
+}
+#page-prev:hover, #page-next:hover { background: var(--birch); }
+#page-info {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 700;
+  color: var(--text-secondary);
+  min-width: 60px; text-align: center;
+}
+#page-num { color: var(--graphite); font-size: 24px; }
+
+/* ============================================
+   返回探索按钮
+   ============================================ */
+#back-to-explore {
+  position: fixed; top: 12px; left: 12px;
+  z-index: 10;
+  display: none;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  border: 1.5px solid var(--kraft);
+  border-radius: 3px 10px 3px 10px;
+  padding: 6px 16px;
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 2px 2px 0 rgba(139,115,85,0.12);
+  transition: all 0.15s;
+}
+#back-to-explore.visible { display: block; }
+#back-to-explore:hover {
+  background: var(--kraft);
+  color: var(--paper);
+  transform: rotate(-1deg) scale(1.02);
+}

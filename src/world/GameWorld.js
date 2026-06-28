@@ -47,6 +47,8 @@ import {
   drawAIDesk, drawSearchDesk,
   drawSharpener, drawInkwell, drawOrigamiTable, drawStickerAlbum, drawAbacus, drawTimeCapsule,
   drawCoffeeCup, drawPlant, drawCat, drawPencil, drawPictureFrame,
+  drawMushroom, drawFlowers, drawLamp, drawPaperPlane, drawButterfly,
+  drawFootprints, drawRock, drawGrassTuft,
   drawPromptBubble, drawPlayer, drawZoneLabel,
   spawnDust, spawnClickRipple, updateEffects, drawEffects,
 } from './WorldRenderer.js';
@@ -153,7 +155,7 @@ export class GameWorld {
 
     board.addMessage('欢迎！');
     board.addMessage('手绘笔记本');
-    board.addMessage('按F互动');
+    board.addMessage('靠近场景互动');
 
     mailbox.addMessage('你好，欢迎来到手绘世界！ ✨');
     mailbox.addMessage('每一笔都是独特的痕迹');
@@ -194,6 +196,33 @@ export class GameWorld {
       { type: 'plant',  x: 1950, y: 490 },
       { type: 'cat',    x: 3550, y: 2220 },
       { type: 'frame',  x: 450, y: 740 },
+      // 新增丰富装饰物：蘑菇、花丛、路灯、纸飞机、蝴蝶、脚印、石头、草丛
+      { type: 'mushroom',  x: 680, y: 560 },
+      { type: 'mushroom',  x: 2950, y: 2550 },
+      { type: 'mushroom',  x: 1650, y: 1650 },
+      { type: 'flowers',   x: 920, y: 660 },
+      { type: 'flowers',   x: 2720, y: 1680 },
+      { type: 'flowers',   x: 540, y: 2050 },
+      { type: 'flowers',   x: 3350, y: 2000 },
+      { type: 'lamp',      x: 1400, y: 1050 },
+      { type: 'lamp',      x: 2600, y: 450 },
+      { type: 'lamp',      x: 2000, y: 2650 },
+      { type: 'paperplane',x: 1100, y: 500, angle: 0.2 },
+      { type: 'paperplane',x: 3000, y: 900, angle: -0.3 },
+      { type: 'paperplane',x: 2300, y: 2300, angle: 0.4 },
+      { type: 'butterfly', x: 720, y: 800 },
+      { type: 'butterfly', x: 2200, y: 600 },
+      { type: 'butterfly', x: 1600, y: 2700 },
+      { type: 'footprints',x: 1050, y: 2450 },
+      { type: 'footprints',x: 2250, y: 1100 },
+      { type: 'rock',      x: 380, y: 1300 },
+      { type: 'rock',      x: 3650, y: 600 },
+      { type: 'rock',      x: 1200, y: 2600 },
+      { type: 'grass',     x: 480, y: 900 },
+      { type: 'grass',     x: 1900, y: 1200 },
+      { type: 'grass',     x: 3300, y: 1650 },
+      { type: 'grass',     x: 950, y: 2100 },
+      { type: 'grass',     x: 2800, y: 2800 },
     ];
 
     ensureBackground();
@@ -266,6 +295,14 @@ export class GameWorld {
         case 'cat':    drawCat(ctx, d.x, d.y, time); break;
         case 'pencil': drawPencil(ctx, d.x, d.y, d.angle); break;
         case 'frame':  drawPictureFrame(ctx, d.x, d.y, time); break;
+        case 'mushroom':  drawMushroom(ctx, d.x, d.y, time); break;
+        case 'flowers':   drawFlowers(ctx, d.x, d.y, time); break;
+        case 'lamp':      drawLamp(ctx, d.x, d.y, time); break;
+        case 'paperplane':drawPaperPlane(ctx, d.x, d.y, time); break;
+        case 'butterfly': drawButterfly(ctx, d.x, d.y, time); break;
+        case 'footprints':drawFootprints(ctx, d.x, d.y); break;
+        case 'rock':      drawRock(ctx, d.x, d.y); break;
+        case 'grass':     drawGrassTuft(ctx, d.x, d.y, time); break;
       }
     }
 

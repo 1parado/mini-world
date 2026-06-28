@@ -1,0 +1,123 @@
+/* ============================================
+   🌤️ 气候站 — 拟物：金属仪器面板
+   ============================================ */
+
+/* 气候站覆写：深灰金属面板 */
+#weather-modal {
+  background:
+    linear-gradient(180deg,
+      #455A64 0%, #37474F 8%, #263238 50%, #37474F 92%, #263238 100%);
+  border-color: #546E7A;
+  border-radius: 4px 16px 4px 16px;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    4px 4px 0 rgba(10,20,25,0.5),
+    0 12px 40px rgba(0,0,0,0.3),
+    /* 金属外框 */
+    0 0 0 3px #546E7A,
+    0 0 0 5px #37474F;
+}
+#weather-modal::after {
+  background: linear-gradient(225deg, #546E7A 50%, transparent 50%);
+}
+#weather-modal h2 {
+  color: #B0BEC5;
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+#weather-modal .close-btn {
+  border-color: #546E7A;
+  color: #90A4AE;
+  background: #37474F;
+}
+#weather-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+
+/* 温度标签行 — 仪器表盘文字风格 */
+#weather-label {
+  color: #4FC3F7 !important;
+  font-family: var(--font-display) !important;
+  font-size: 22px !important;
+  text-align: center !important;
+  text-shadow: 0 0 8px rgba(79,195,247,0.3);
+  margin-bottom: 4px;
+}
+
+/* Canvas 画布 — 嵌入式仪表屏幕 */
+.weather-canvas {
+  border-radius: 8px;
+  border: 2px solid #546E7A;
+  display: block;
+  margin: 8px auto;
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,0.4),
+    0 2px 6px rgba(0,0,0,0.3),
+    /* 屏幕内发光 */
+    0 0 12px rgba(79,195,247,0.08);
+  width: 100%;
+  max-width: 300px;
+}
+
+/* 天气按钮栏 — 面板旋钮/开关风格 */
+.weather-btn-bar {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+  margin: 10px 0;
+}
+.weather-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1.5px solid #607D8B;
+  background:
+    linear-gradient(180deg, #546E7A 0%, #455A64 100%);
+  cursor: pointer;
+  font-size: 14px;
+  color: #CFD8DC;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 2px 4px rgba(0,0,0,0.3);
+  transition: all 0.15s;
+  position: relative;
+}
+.weather-btn:hover {
+  background:
+    linear-gradient(180deg, #607D8B 0%, #546E7A 100%);
+  color: #FFF;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 3px 8px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+.weather-btn:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.3),
+    0 1px 2px rgba(0,0,0,0.2);
+}
+/* 旋钮高光点 */
+.weather-btn::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 50%;
+  transform: translateX(-50%);
+  width: 14px; height: 2px;
+  border-radius: 1px;
+  background: rgba(255,255,255,0.12);
+}
+
+/* 仪器面板装饰：底部信息行 */
+#weather-modal .zone-info-row {
+  color: rgba(176,190,197,0.5);
+  font-size: 12px;
+  margin-top: 6px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+#weather-modal .zone-info-row span {
+  color: #4FC3F7;
+  text-shadow: 0 0 6px rgba(79,195,247,0.2);
+}

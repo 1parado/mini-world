@@ -1,0 +1,31 @@
+/* ============================================
+   🧩 拼图桌 — 拟物：儿童拼图泡沫垫
+   ============================================ */
+#puzzle-modal {
+  background:
+    linear-gradient(165deg, #E8E0D0 0%, #DDD5C4 40%, #D4C8B0 100%);
+  border-color: #BCAAA4;
+  border-radius: 8px 18px 8px 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -1px 0 rgba(0,0,0,0.05),
+    4px 4px 0 rgba(188,170,164,0.3),
+    0 12px 40px rgba(0,0,0,0.1);
+}
+#puzzle-modal::after {
+  background: linear-gradient(225deg, #E8E0D0 50%, transparent 50%);
+}
+#puzzle-modal h2 {
+  color: #5D4037;
+  border-bottom-color: rgba(93,64,55,0.1);
+}
+#puzzle-modal .close-btn {
+  border-color: #BCAAA4;
+  color: #5D4037;
+  background: #E8E0D0;
+}
+#puzzle-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}

@@ -1,0 +1,38 @@
+/* ============================================
+   🌿 迷宫花园 — 拟物：园艺篱笆
+   ============================================ */
+#maze-modal {
+  background:
+    linear-gradient(180deg, #2E7D32 0%, #388E3C 40%, #1B5E20 100%);
+  border-color: #1B5E20;
+  border-radius: 4px 14px 4px 14px;
+  box-shadow:
+    inset 0 0 40px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    4px 4px 0 rgba(10,40,10,0.4),
+    0 12px 40px rgba(0,0,0,0.25);
+}
+#maze-modal::after {
+  background: linear-gradient(225deg, #388E3C 50%, transparent 50%);
+}
+#maze-modal h2 {
+  color: #C8E6C9;
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+#maze-modal .close-btn {
+  border-color: #2E7D32;
+  color: #C8E6C9;
+  background: #1B5E20;
+}
+#maze-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+.maze-canvas {
+  border-color: rgba(200,230,201,0.2) !important;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+.maze-info span {
+  color: #A5D6A7 !important;
+}

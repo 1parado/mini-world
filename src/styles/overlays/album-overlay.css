@@ -1,0 +1,36 @@
+/* ============================================
+   📷 相册 — 拟物：皮革相册
+   ============================================ */
+#album-modal {
+  background:
+    linear-gradient(180deg, #5D4037 0%, #4E342E 40%, #3E2723 100%);
+  border-color: #2C1B1A;
+  border-radius: 4px 18px 4px 18px;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    4px 4px 0 rgba(20,10,5,0.4),
+    0 12px 40px rgba(0,0,0,0.25),
+    0 0 0 3px #8D6E63,
+    0 0 0 5px #D4AF37;
+}
+#album-modal::after {
+  background: linear-gradient(225deg, #5D4037 50%, transparent 50%);
+}
+#album-modal h2 {
+  color: #FFCC80;
+  border-bottom-color: rgba(212,175,55,0.1);
+}
+#album-modal .close-btn {
+  border-color: #8D6E63;
+  color: #FFCC80;
+  background: #4E342E;
+}
+#album-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+.album-toolbar {
+  border-bottom-color: rgba(255,204,128,0.1) !important;
+}

@@ -1,0 +1,42 @@
+/* ============================================
+   设计系统 — "文具桌"
+   每种颜色源自实物文具。
+   ============================================ */
+:root {
+  /* 调色板 */
+  --paper: #FAF5E8;
+  --graphite: #2C2C3A;
+  --kraft: #8B7355;
+  --redline: #EA5455;
+  --birch: #D4C4A8;
+  --teal: #077B8A;
+
+  /* 透明度等级（仅5级）*/
+  --a-full: 1;
+  --a-strong: 0.7;
+  --a-med: 0.5;
+  --a-subtle: 0.2;
+  --a-ghost: 0.08;
+
+  /* 派生通用值 */
+  --border-color: color-mix(in srgb, var(--graphite) var(--a-subtle), transparent);
+  --border-strong: color-mix(in srgb, var(--graphite) var(--a-med), transparent);
+  --text-primary: color-mix(in srgb, var(--graphite) var(--a-strong), transparent);
+  --text-secondary: color-mix(in srgb, var(--graphite) var(--a-med), transparent);
+  --text-ghost: color-mix(in srgb, var(--graphite) var(--a-subtle), transparent);
+
+  /* 字体 */
+  --font-display: 'Caveat', cursive;
+  --font-ui: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-canvas: 'Courier New', monospace;
+}
+
+/* === 重置 === */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  overflow: hidden;
+  background: var(--birch);
+  font-family: var(--font-ui);
+  color: var(--graphite);
+  -webkit-font-smoothing: antialiased;
+}

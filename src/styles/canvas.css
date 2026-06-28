@@ -1,0 +1,21 @@
+/* ============================================
+   3D背景画布 — Three.js文具桌面
+   ============================================ */
+#three-canvas {
+  width: 100vw; height: 100vh;
+  position: fixed; top: 0; left: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+/* ============================================
+   主画布 — 2D手绘层，半透明覆盖3D之上
+   ============================================ */
+#game-canvas {
+  width: 100vw; height: 100vh;
+  position: fixed; top: 0; left: 0;
+  z-index: 1;
+  display: block;
+  touch-action: none; /* 阻止移动端滚动/缩放干扰 */
+}

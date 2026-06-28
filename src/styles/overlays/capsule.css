@@ -1,0 +1,40 @@
+/* ============================================
+   ⏰ 时光胶囊 — 拟物：黄铜圆柱盒
+   ============================================ */
+#capsule-modal {
+  background:
+    linear-gradient(180deg, #A88650 0%, #8B6914 40%, #6D4C00 100%);
+  border-color: #5D4037;
+  border-radius: 4px 20px 4px 20px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(0,0,0,0.1),
+    4px 4px 0 rgba(60,30,10,0.35),
+    0 12px 40px rgba(0,0,0,0.2),
+    0 0 0 3px #6D4C00;
+}
+#capsule-modal::after {
+  background: linear-gradient(225deg, #A88650 50%, transparent 50%);
+}
+#capsule-modal h2 {
+  color: #FFF3E0;
+  border-bottom-color: rgba(255,243,224,0.1);
+}
+#capsule-modal .close-btn {
+  border-color: #6D4C00;
+  color: #FFF3E0;
+  background: #8B6914;
+}
+#capsule-modal .close-btn:hover {
+  background: var(--redline);
+  color: #FFF;
+  border-color: var(--redline);
+}
+.capsule-time-btn {
+  background: rgba(255,255,255,0.1) !important;
+  color: #FFF3E0 !important;
+  border-color: rgba(255,243,224,0.15) !important;
+}
+.capsule-time-btn:hover {
+  background: rgba(255,255,255,0.15) !important;
+}
